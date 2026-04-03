@@ -13,10 +13,10 @@
 
 **Purpose**: Initialize the Django monolith, quality tooling, and baseline project layout.
 
-- [ ] T001 Create the Django monolith scaffold and dependency manifests in repo/manage.py, repo/pyproject.toml, repo/requirements/base.txt, repo/requirements/dev.txt, repo/requirements/prod.txt
-- [ ] T002 [P] Configure Ruff, pytest, and Playwright baseline settings in repo/pyproject.toml, repo/pytest.ini, repo/package.json, repo/playwright.config.ts
-- [ ] T003 [P] Create environment templates and local bootstrap files in repo/.env.example, repo/.gitignore, repo/README.md
-- [ ] T004 [P] Create base Django settings and app package structure in repo/resumetailor/settings/base.py, repo/resumetailor/settings/dev.py, repo/resumetailor/settings/prod.py, repo/apps/common/__init__.py, repo/apps/intake/__init__.py, repo/apps/tailoring/__init__.py, repo/apps/ai/__init__.py, repo/apps/outputs/__init__.py
+- [X] T001 Create the Django monolith scaffold and dependency manifests in repo/manage.py, repo/pyproject.toml, repo/requirements/base.txt, repo/requirements/dev.txt, repo/requirements/prod.txt
+- [X] T002 [P] Configure Ruff, pytest, and Playwright baseline settings in repo/pyproject.toml, repo/pytest.ini, repo/package.json, repo/playwright.config.ts
+- [X] T003 [P] Create environment templates and local bootstrap files in repo/.env.example, repo/.gitignore, repo/README.md
+- [X] T004 [P] Create base Django settings and app package structure in repo/resumetailor/settings/base.py, repo/resumetailor/settings/dev.py, repo/resumetailor/settings/prod.py, repo/apps/common/__init__.py, repo/apps/intake/__init__.py, repo/apps/tailoring/__init__.py, repo/apps/ai/__init__.py, repo/apps/outputs/__init__.py
 
 ---
 
@@ -26,14 +26,14 @@
 
 **⚠️ CRITICAL**: No user story work should begin until this phase is complete.
 
-- [ ] T005 Create shared workspace, source document, job target, and tailoring run models with initial migrations in repo/apps/common/models.py, repo/apps/intake/models.py, repo/apps/tailoring/models.py, repo/apps/common/migrations/, repo/apps/intake/migrations/, repo/apps/tailoring/migrations/
-- [ ] T006 [P] Implement durable storage abstractions for local development and Azure Blob storage in repo/apps/intake/storage.py, repo/apps/intake/repositories.py, repo/resumetailor/settings/base.py
-- [ ] T007 [P] Implement resume parsing and normalization services for PDF, DOC, and DOCX in repo/apps/intake/parsers.py, repo/apps/intake/services.py
-- [ ] T008 [P] Implement the GitHub Models client, prompt policy, and retry/error handling in repo/apps/ai/client.py, repo/apps/ai/prompts.py, repo/apps/ai/services.py
-- [ ] T009 Implement the shared GameCube-inspired app shell, theme tokens, tactile interaction primitives, and component-style contract layout in repo/templates/base.html, repo/templates/components/layout_shell.html, repo/static/css/theme.css, repo/static/css/components/, repo/static/js/app.js
-- [ ] T010 Implement shared routing, session bootstrap, current-workspace endpoint, and common error handling in repo/resumetailor/urls.py, repo/apps/common/views.py, repo/apps/common/urls.py, repo/apps/common/forms.py
-- [ ] T011 [P] Implement shared logging, timing metrics, and performance instrumentation in repo/apps/common/logging.py, repo/apps/common/metrics.py, repo/resumetailor/settings/prod.py
-- [ ] T012 [P] Implement the baseline CI workflow for lint, checks, unit/integration tests, and browser smoke setup in .github/workflows/ci.yml
+- [X] T005 Create shared workspace, source document, job target, and tailoring run models with initial migrations in repo/apps/common/models.py, repo/apps/intake/models.py, repo/apps/tailoring/models.py, repo/apps/common/migrations/, repo/apps/intake/migrations/, repo/apps/tailoring/migrations/
+- [X] T006 [P] Implement durable storage abstractions for local development and Azure Blob storage in repo/apps/intake/storage.py, repo/apps/intake/repositories.py, repo/resumetailor/settings/base.py
+- [X] T007 [P] Implement resume parsing and normalization services for PDF, DOC, and DOCX in repo/apps/intake/parsers.py, repo/apps/intake/services.py
+- [X] T008 [P] Implement the GitHub Models client, prompt policy, and retry/error handling in repo/apps/ai/client.py, repo/apps/ai/prompts.py, repo/apps/ai/services.py
+- [X] T009 Implement the shared GameCube-inspired app shell, theme tokens, tactile interaction primitives, and component-style contract layout in repo/templates/base.html, repo/templates/components/layout_shell.html, repo/static/css/theme.css, repo/static/css/components/, repo/static/js/app.js
+- [X] T010 Implement shared routing, session bootstrap, current-workspace endpoint, and common error handling in repo/resumetailor/urls.py, repo/apps/common/views.py, repo/apps/common/urls.py, repo/apps/common/forms.py
+- [X] T011 [P] Implement shared logging, timing metrics, and performance instrumentation in repo/apps/common/logging.py, repo/apps/common/metrics.py, repo/resumetailor/settings/prod.py
+- [X] T012 [P] Implement the baseline CI workflow for lint, checks, unit/integration tests, and browser smoke setup in .github/workflows/ci.yml
 
 **Checkpoint**: Foundation ready. Story lanes can now proceed in parallel.
 
@@ -47,19 +47,19 @@
 
 ### Tests for User Story 1 ⚠️
 
-- [ ] T013 [P] [US1] Create contract tests for current workspace and upload endpoints in repo/tests/contract/test_workspace_api.py
-- [ ] T014 [P] [US1] Create contract tests for job target creation and tailoring start endpoints in repo/tests/contract/test_tailoring_start_api.py
-- [ ] T015 [P] [US1] Create integration test for the upload-to-review draft flow in repo/tests/integration/test_resume_tailoring_flow.py
-- [ ] T016 [P] [US1] Create unit tests for document parsing and truthfulness guard behavior in repo/tests/unit/test_document_parsing.py, repo/tests/unit/test_truthfulness_guard.py
+- [X] T013 [P] [US1] Create contract tests for current workspace and upload endpoints in repo/tests/contract/test_workspace_api.py
+- [X] T014 [P] [US1] Create contract tests for job target creation and tailoring start endpoints in repo/tests/contract/test_tailoring_start_api.py
+- [X] T015 [P] [US1] Create integration test for the upload-to-review draft flow in repo/tests/integration/test_resume_tailoring_flow.py
+- [X] T016 [P] [US1] Create unit tests for document parsing and truthfulness guard behavior in repo/tests/unit/test_document_parsing.py, repo/tests/unit/test_truthfulness_guard.py
 
 ### Implementation for User Story 1
 
-- [ ] T017 [US1] Implement upload and active-source document forms, views, and templates in repo/apps/intake/forms.py, repo/apps/intake/views.py, repo/templates/intake/upload.html
-- [ ] T018 [US1] Implement job description capture and current-source UI badge rendering in repo/apps/intake/views.py, repo/templates/intake/job_target.html, repo/templates/components/current_source_badge.html
-- [ ] T019 [US1] Implement draft orchestration for summary, skills, and experience rewriting in repo/apps/tailoring/draft_service.py, repo/apps/ai/prompts.py
-- [ ] T020 [US1] Implement source-grounding and unsupported-claim validation in repo/apps/tailoring/validators.py, repo/apps/tailoring/draft_service.py
-- [ ] T021 [US1] Implement MVP review retrieval and manual-edit save flows in repo/apps/tailoring/review_views.py, repo/apps/tailoring/review_urls.py, repo/templates/tailoring/review.html, repo/templates/tailoring/partials/review_core_panel.html
-- [ ] T022 [US1] Verify themed loading, empty, error, success, and active-source states plus the 90-second draft budget for the MVP flow in repo/templates/components/loading_disc.html, repo/templates/components/empty_state.html, repo/static/css/components/review_core.css, repo/tests/integration/test_resume_tailoring_flow.py
+- [X] T017 [US1] Implement upload and active-source document forms, views, and templates in repo/apps/intake/forms.py, repo/apps/intake/views.py, repo/templates/intake/upload.html
+- [X] T018 [US1] Implement job description capture and current-source UI badge rendering in repo/apps/intake/views.py, repo/templates/intake/job_target.html, repo/templates/components/current_source_badge.html
+- [X] T019 [US1] Implement draft orchestration for summary, skills, and experience rewriting in repo/apps/tailoring/draft_service.py, repo/apps/ai/prompts.py
+- [X] T020 [US1] Implement source-grounding and unsupported-claim validation in repo/apps/tailoring/validators.py, repo/apps/tailoring/draft_service.py
+- [X] T021 [US1] Implement MVP review retrieval and manual-edit save flows in repo/apps/tailoring/review_views.py, repo/apps/tailoring/review_urls.py, repo/templates/tailoring/review.html, repo/templates/tailoring/partials/review_core_panel.html
+- [X] T022 [US1] Verify themed loading, empty, error, success, and active-source states plus the 90-second draft budget for the MVP flow in repo/templates/components/loading_disc.html, repo/templates/components/empty_state.html, repo/static/css/components/review_core.css, repo/tests/integration/test_resume_tailoring_flow.py
 
 **Checkpoint**: User Story 1 is fully functional and independently testable.
 
@@ -73,19 +73,19 @@
 
 ### Tests for User Story 2 ⚠️
 
-- [ ] T023 [P] [US2] Create unit tests for skill-gap classification and transferable-skill mapping in repo/tests/unit/test_skill_gap_analysis.py
-- [ ] T024 [P] [US2] Create unit tests for project recommendation and bullet proposal formatting in repo/tests/unit/test_project_recommendations.py
-- [ ] T025 [P] [US2] Create contract tests for tailoring detail retrieval and review-update payloads in repo/tests/contract/test_tailoring_review_api.py
-- [ ] T026 [P] [US2] Create integration test for gap analysis and project inclusion decisions in repo/tests/integration/test_skill_gap_review_flow.py
+- [X] T023 [P] [US2] Create unit tests for skill-gap classification and transferable-skill mapping in repo/tests/unit/test_skill_gap_analysis.py
+- [X] T024 [P] [US2] Create unit tests for project recommendation and bullet proposal formatting in repo/tests/unit/test_project_recommendations.py
+- [X] T025 [P] [US2] Create contract tests for tailoring detail retrieval and review-update payloads in repo/tests/contract/test_tailoring_review_api.py
+- [X] T026 [P] [US2] Create integration test for gap analysis and project inclusion decisions in repo/tests/integration/test_skill_gap_review_flow.py
 
 ### Implementation for User Story 2
 
-- [ ] T027 [P] [US2] Create skill-gap, project recommendation, and project bullet proposal models with migrations in repo/apps/tailoring/models.py, repo/apps/tailoring/migrations/
-- [ ] T028 [US2] Implement skill-gap analysis and transferable-skill mapping services in repo/apps/tailoring/gap_analysis.py, repo/apps/tailoring/gap_service.py
-- [ ] T029 [US2] Implement micro-project recommendation and bullet proposal generation in repo/apps/tailoring/recommendations.py, repo/apps/tailoring/gap_service.py
-- [ ] T030 [US2] Implement project include/exclude handlers and gap-review composition in repo/apps/tailoring/gap_review_views.py, repo/apps/tailoring/gap_review_urls.py, repo/templates/tailoring/partials/review_gap_panel.html
-- [ ] T031 [US2] Implement GameCube-styled gap-analysis and project recommendation components in repo/templates/components/gap_panel.html, repo/templates/components/project_card.html, repo/static/css/components/gap_panel.css
-- [ ] T032 [US2] Verify latency, validation, empty-state, and error-state behavior for gap analysis and project review in repo/apps/common/metrics.py, repo/tests/integration/test_skill_gap_review_flow.py
+- [X] T027 [P] [US2] Create skill-gap, project recommendation, and project bullet proposal models with migrations in repo/apps/tailoring/models.py, repo/apps/tailoring/migrations/
+- [X] T028 [US2] Implement skill-gap analysis and transferable-skill mapping services in repo/apps/tailoring/gap_analysis.py, repo/apps/tailoring/gap_service.py
+- [X] T029 [US2] Implement micro-project recommendation and bullet proposal generation in repo/apps/tailoring/recommendations.py, repo/apps/tailoring/gap_service.py
+- [X] T030 [US2] Implement project include/exclude handlers and gap-review composition in repo/apps/tailoring/gap_review_views.py, repo/apps/tailoring/gap_review_urls.py, repo/templates/tailoring/partials/review_gap_panel.html
+- [X] T031 [US2] Implement GameCube-styled gap-analysis and project recommendation components in repo/templates/components/gap_panel.html, repo/templates/components/project_card.html, repo/static/css/components/gap_panel.css
+- [X] T032 [US2] Verify latency, validation, empty-state, and error-state behavior for gap analysis and project review in repo/apps/common/metrics.py, repo/tests/integration/test_skill_gap_review_flow.py
 
 **Checkpoint**: User Stories 1 and 2 work independently, and US2 adds reviewable gap/project intelligence without breaking US1.
 
@@ -99,20 +99,20 @@
 
 ### Tests for User Story 3 ⚠️
 
-- [ ] T033 [P] [US3] Create unit tests for resume PDF composition and cover-letter generation in repo/tests/unit/test_resume_export.py, repo/tests/unit/test_cover_letter_generation.py
-- [ ] T034 [P] [US3] Create contract tests for resume and cover-letter artifact endpoints in repo/tests/contract/test_artifact_api.py
-- [ ] T035 [P] [US3] Create integration test for separate artifact generation flows in repo/tests/integration/test_artifact_generation_flow.py
-- [ ] T036 [P] [US3] Create Playwright smoke coverage for separate resume and cover-letter actions in repo/tests/e2e/test_generation_actions.py
+- [X] T033 [P] [US3] Create unit tests for resume PDF composition and cover-letter generation in repo/tests/unit/test_resume_export.py, repo/tests/unit/test_cover_letter_generation.py
+- [X] T034 [P] [US3] Create contract tests for resume and cover-letter artifact endpoints in repo/tests/contract/test_artifact_api.py
+- [X] T035 [P] [US3] Create integration test for separate artifact generation flows in repo/tests/integration/test_artifact_generation_flow.py
+- [X] T036 [P] [US3] Create Playwright smoke coverage for separate resume and cover-letter actions in repo/tests/e2e/test_generation_actions.py
 
 ### Implementation for User Story 3
 
-- [ ] T037 [P] [US3] Create cover-letter draft and generated-artifact models with migrations in repo/apps/outputs/models.py, repo/apps/outputs/migrations/
-- [ ] T038 [US3] Implement ATS-safe resume PDF composition and artifact persistence in repo/apps/outputs/resume_service.py, repo/apps/outputs/pdf_templates/, repo/apps/outputs/services.py
-- [ ] T039 [US3] Implement separate cover-letter generation and templating in repo/apps/outputs/cover_letter_service.py, repo/templates/outputs/cover_letter.html
-- [ ] T040 [US3] Implement artifact generation endpoints, download views, and separate action controls in repo/apps/outputs/views.py, repo/apps/outputs/urls.py, repo/templates/components/export_actions.html, repo/templates/tailoring/partials/review_export_panel.html
-- [ ] T041 [US3] Enforce export approval rules and artifact audit metadata in repo/apps/outputs/policies.py, repo/apps/outputs/services.py
-- [ ] T042 [US3] Verify themed generation, empty-artifact, error, and success states plus the 30-second resume export budget, ATS-safe export behavior, and first-attempt cover-letter success path in repo/static/css/components/export_actions.css, repo/templates/components/loading_disc.html, repo/templates/components/empty_state.html, repo/tests/integration/test_artifact_generation_flow.py
-- [ ] T043 [US3] Verify cover-letter generation latency stays within the 90-second performance budget for successful runs in repo/apps/common/metrics.py, repo/tests/integration/test_artifact_generation_flow.py
+- [X] T037 [P] [US3] Create cover-letter draft and generated-artifact models with migrations in repo/apps/outputs/models.py, repo/apps/outputs/migrations/
+- [X] T038 [US3] Implement ATS-safe resume PDF composition and artifact persistence in repo/apps/outputs/resume_service.py, repo/apps/outputs/pdf_templates/, repo/apps/outputs/services.py
+- [X] T039 [US3] Implement separate cover-letter generation and templating in repo/apps/outputs/cover_letter_service.py, repo/templates/outputs/cover_letter.html
+- [X] T040 [US3] Implement artifact generation endpoints, download views, and separate action controls in repo/apps/outputs/views.py, repo/apps/outputs/urls.py, repo/templates/components/export_actions.html, repo/templates/tailoring/partials/review_export_panel.html
+- [X] T041 [US3] Enforce export approval rules and artifact audit metadata in repo/apps/outputs/policies.py, repo/apps/outputs/services.py
+- [X] T042 [US3] Verify themed generation, empty-artifact, error, and success states plus the 30-second resume export budget, ATS-safe export behavior, and first-attempt cover-letter success path in repo/static/css/components/export_actions.css, repo/templates/components/loading_disc.html, repo/templates/components/empty_state.html, repo/tests/integration/test_artifact_generation_flow.py
+- [X] T043 [US3] Verify cover-letter generation latency stays within the 90-second performance budget for successful runs in repo/apps/common/metrics.py, repo/tests/integration/test_artifact_generation_flow.py
 
 **Checkpoint**: All user stories are independently functional and the user can generate resume and cover-letter outputs separately.
 
@@ -122,11 +122,11 @@
 
 **Purpose**: Delivery, infrastructure, and whole-system quality work that spans multiple stories.
 
-- [ ] T044 [P] Implement Azure App Service, PostgreSQL, Blob Storage, Key Vault, and Application Insights Bicep modules in infra/main.bicep, infra/modules/appservice.bicep, infra/modules/postgres.bicep, infra/modules/storage.bicep, infra/modules/keyvault.bicep, infra/modules/monitoring.bicep, infra/env/dev.bicepparam, infra/env/prod.bicepparam
-- [ ] T045 [P] Implement GitHub Actions deployment workflow with Azure OIDC and Bicep what-if validation in .github/workflows/deploy.yml
-- [ ] T046 [P] Implement production startup and deployment settings for App Service in repo/startup.sh, repo/resumetailor/settings/prod.py, repo/requirements/prod.txt
-- [ ] T047 Run quickstart validation and update onboarding/deployment instructions in repo/README.md, specs/001-resume-tailor-ai/quickstart.md
-- [ ] T048 Perform final UX consistency, security, and performance audit across app and deployment surfaces in repo/templates/base.html, repo/static/css/theme.css, repo/tests/e2e/test_generation_actions.py, infra/main.bicep, .github/workflows/ci.yml, .github/workflows/deploy.yml
+- [X] T044 [P] Implement Azure App Service, PostgreSQL, Blob Storage, Key Vault, and Application Insights Bicep modules in infra/main.bicep, infra/modules/appservice.bicep, infra/modules/postgres.bicep, infra/modules/storage.bicep, infra/modules/keyvault.bicep, infra/modules/monitoring.bicep, infra/env/dev.bicepparam, infra/env/prod.bicepparam
+- [X] T045 [P] Implement GitHub Actions deployment workflow with Azure OIDC and Bicep what-if validation in .github/workflows/deploy.yml
+- [X] T046 [P] Implement production startup and deployment settings for App Service in repo/startup.sh, repo/resumetailor/settings/prod.py, repo/requirements/prod.txt
+- [X] T047 Run quickstart validation and update onboarding/deployment instructions in repo/README.md, specs/001-resume-tailor-ai/quickstart.md
+- [X] T048 Perform final UX consistency, security, and performance audit across app and deployment surfaces in repo/templates/base.html, repo/static/css/theme.css, repo/tests/e2e/test_generation_actions.py, infra/main.bicep, .github/workflows/ci.yml, .github/workflows/deploy.yml
 
 ---
 

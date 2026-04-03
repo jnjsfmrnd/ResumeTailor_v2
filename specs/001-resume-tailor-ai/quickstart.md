@@ -69,6 +69,10 @@ Suggested validation flow:
 2. `az account set --subscription <subscription-id>`
 3. `az deployment group what-if --resource-group <rg> --template-file infra/main.bicep --parameters infra/env/dev.bicepparam`
 
+For secured validation in this project, include secure parameters explicitly:
+
+4. `az deployment group what-if --resource-group <rg> --template-file infra/main.bicep --parameters infra/env/dev.bicepparam --parameters postgresAdminPassword=<...> djangoSecretKey=<...> githubModelsToken=<...>`
+
 ## 6. GitHub Actions CI/CD setup
 
 ### CI workflow
@@ -97,9 +101,26 @@ Required GitHub repository or environment secrets/configuration:
 1. `AZURE_CLIENT_ID`
 2. `AZURE_TENANT_ID`
 3. `AZURE_SUBSCRIPTION_ID`
-4. Non-secret environment variables for resource names and deployment environment labels
+4. `AZURE_RESOURCE_GROUP`
+5. `AZURE_ENVIRONMENT` (`dev` or `prod`)
+6. `POSTGRES_ADMIN_PASSWORD`
+7. `DJANGO_SECRET_KEY`
+8. `GITHUB_MODELS_TOKEN`
 
 The GitHub Models PAT should live in Azure Key Vault for runtime app usage. It should not be duplicated into CI unless a build-time operation explicitly requires it.
+
+The deployment workflow validates Bicep with `what-if`, deploys infra, zips `repo/`, and deploys the app package to App Service. It also sets startup command to `bash startup.sh` via Bicep parameters.
+
+## 6.5 Runtime environment contract
+
+Expected App Service runtime settings:
+
+1. `DJANGO_SETTINGS_MODULE=resumetailor.settings.prod`
+2. `USE_LOCAL_FILE_STORAGE=false`
+3. `AZURE_STORAGE_ACCOUNT_NAME`, `AZURE_STORAGE_CONTAINER_NAME`, `AZURE_BLOB_ENDPOINT`
+4. `APPLICATIONINSIGHTS_CONNECTION_STRING`
+5. `GITHUB_MODELS_ENDPOINT`, `GITHUB_MODELS_MODEL`
+6. `DJANGO_SECRET_KEY`, `DATABASE_URL`, and `GITHUB_MODELS_TOKEN` as Key Vault references
 
 ## 7. First production smoke test
 

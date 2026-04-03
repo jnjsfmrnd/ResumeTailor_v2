@@ -1,0 +1,110 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Deployment environment (dev or prod)
+        required: true
+        default: dev
+        type: choice
+        options:
+          - dev
+          - prod
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  AZURE_RESOURCE_GROUP: ${{ vars.AZURE_RESOURCE_GROUP }}
+  AZURE_ENVIRONMENT: ${{ github.event.inputs.environment || vars.AZURE_ENVIRONMENT || 'dev' }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: ${{ github.event.inputs.environment || vars.AZURE_ENVIRONMENT || 'dev' }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Azure login with OIDC
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Validate Bicep template compilation
+        run: az bicep build --file infra/main.bicep
+
+      - name: Azure deployment what-if
+        run: |
+          az deployment group what-if \
+            --name rt-${{ github.run_number }}-whatif \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --template-file infra/main.bicep \
+            --parameters infra/env/${AZURE_ENVIRONMENT}.bicepparam \
+            --parameters postgresAdminPassword="${{ secrets.POSTGRES_ADMIN_PASSWORD }}" \
+                         djangoSecretKey="${{ secrets.DJANGO_SECRET_KEY }}" \
+                         githubModelsToken="${{ secrets.GITHUB_MODELS_TOKEN }}"
+
+      - name: Deploy infrastructure
+        id: infra
+        run: |
+          az deployment group create \
+            --name rt-${{ github.run_number }} \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --template-file infra/main.bicep \
+            --parameters infra/env/${AZURE_ENVIRONMENT}.bicepparam \
+            --parameters postgresAdminPassword="${{ secrets.POSTGRES_ADMIN_PASSWORD }}" \
+                         djangoSecretKey="${{ secrets.DJANGO_SECRET_KEY }}" \
+                         githubModelsToken="${{ secrets.GITHUB_MODELS_TOKEN }}"
+
+          web_app_name=$(az deployment group show \
+            --name rt-${{ github.run_number }} \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --query properties.outputs.webAppName.value \
+            -o tsv)
+
+          echo "web_app_name=$web_app_name" >> "$GITHUB_OUTPUT"
+
+      - name: Build deployment package
+        run: |
+          cp repo/requirements/prod.txt repo/requirements.txt
+
+          cd repo
+          zip -r ../app.zip . \
+            -x "node_modules/*" \
+               ".venv/*" \
+               "test-results/*" \
+               "__pycache__/*" \
+               "*.pyc"
+
+      - name: Deploy application package
+        run: |
+          az webapp deploy \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "${{ steps.infra.outputs.web_app_name }}" \
+            --src-path app.zip \
+            --type zip
+
+      - name: Post-deploy health check
+        run: |
+          app_url=$(az webapp show \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "${{ steps.infra.outputs.web_app_name }}" \
+            --query defaultHostName \
+            -o tsv)
+
+          curl --fail --silent --show-error "https://$app_url/" > /dev/null
+          echo "Deployment health check passed for https://$app_url/"
