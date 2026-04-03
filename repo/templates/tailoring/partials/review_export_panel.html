@@ -1,0 +1,79 @@
+<article class="contract-panel export-panel" data-review-export-panel>
+  <h2 class="eyebrow">Step 4 of 4</h2>
+  <h3>Generate Application Outputs</h3>
+  <p>Generate resume and cover-letter outputs separately after review approval.</p>
+
+  {% if run.status == "reviewable" %}
+    {% include "components/export_actions.html" %}
+    {% include "components/loading_disc.html" with label="Generating output..." hidden=True %}
+    {% include "components/empty_state.html" with heading="No exports yet" body="Generate a resume PDF or cover letter to create downloadable artifacts." hidden=True %}
+  {% else %}
+    {% include "components/empty_state.html" with heading="Exports unavailable" body="Complete draft generation and review before exporting outputs." %}
+  {% endif %}
+</article>
+
+<script>
+(function () {
+  const panel = document.querySelector('[data-review-export-panel]');
+  if (!panel) return;
+
+  const actions = panel.querySelector('[data-export-actions]');
+  if (!actions) return;
+
+  const runId = actions.getAttribute('data-run-id');
+  const resumeButton = panel.querySelector('[data-generate-resume]');
+  const coverLetterButton = panel.querySelector('[data-generate-cover-letter]');
+  const feedback = panel.querySelector('[data-export-feedback]');
+  const downloads = panel.querySelector('[data-export-downloads]');
+  const resumeDownload = panel.querySelector('[data-resume-download]');
+  const coverLetterDownload = panel.querySelector('[data-cover-letter-download]');
+  const loader = panel.querySelector('[data-loading-disc]');
+
+  async function runExport(kind) {
+    loader.hidden = false;
+    feedback.textContent = '';
+
+    const endpoint = kind === 'resume' ? '/api/artifacts/resume' : '/api/artifacts/cover-letter';
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tailoringRunId: runId }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || 'Generation failed.');
+      }
+
+      feedback.className = 'export-actions__status export-actions__status--success';
+      feedback.textContent =
+        kind === 'resume' ? 'Resume PDF generated.' : 'Cover letter generated.';
+
+      downloads.hidden = false;
+      if (kind === 'resume' && payload.downloadUrl) {
+        resumeDownload.hidden = false;
+        resumeDownload.href = payload.downloadUrl;
+      }
+      if (kind === 'cover-letter' && payload.downloadUrl) {
+        coverLetterDownload.hidden = false;
+        coverLetterDownload.href = payload.downloadUrl;
+      }
+    } catch (error) {
+      feedback.className = 'export-actions__status export-actions__status--error';
+      feedback.textContent = error.message || 'Generation failed.';
+    } finally {
+      loader.hidden = true;
+    }
+  }
+
+  resumeButton.addEventListener('click', function () {
+    runExport('resume');
+  });
+
+  coverLetterButton.addEventListener('click', function () {
+    runExport('cover-letter');
+  });
+})();
+</script>

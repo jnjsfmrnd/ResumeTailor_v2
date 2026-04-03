@@ -1,0 +1,15 @@
+<div class="export-actions" data-export-actions data-run-id="{{ run.id }}">
+  <button type="button" class="tactile-button" data-generate-resume>
+    Generate resume PDF
+  </button>
+  <button type="button" class="tactile-button tactile-button--secondary" data-generate-cover-letter>
+    Generate cover letter
+  </button>
+</div>
+
+<div class="export-actions__status" aria-live="polite" data-export-feedback></div>
+
+<div class="export-actions__downloads" data-export-downloads hidden>
+  <a class="export-actions__download-link" data-resume-download hidden>Download resume PDF</a>
+  <a class="export-actions__download-link" data-cover-letter-download hidden>Download cover letter</a>
+</div>
