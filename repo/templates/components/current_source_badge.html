@@ -1,0 +1,22 @@
+{% comment %}
+Current-source document badge.
+Renders the filename of the workspace's active resume,
+or a "not uploaded" placeholder when no source is set.
+{% endcomment %}
+<div class="current-source-badge" data-current-source-badge>
+  <span class="current-source-badge__label eyebrow">Active Resume</span>
+  {% if workspace.current_source_document %}
+    <span class="current-source-badge__value current-source-badge__value--set">
+      <span class="current-source-badge__icon" aria-hidden="true">📄</span>
+      <span data-source-filename>{{ workspace.current_source_document.original_filename }}</span>
+      <span class="status-pill status-pill--{{ workspace.current_source_document.parse_status }}">
+        {{ workspace.current_source_document.get_parse_status_display }}
+      </span>
+    </span>
+  {% else %}
+    <span class="current-source-badge__value current-source-badge__value--empty">
+      <span class="current-source-badge__icon" aria-hidden="true">—</span>
+      <span data-source-filename>No resume uploaded yet</span>
+    </span>
+  {% endif %}
+</div>

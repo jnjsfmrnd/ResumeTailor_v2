@@ -1,0 +1,4 @@
+<article class="empty-state{% if hidden %} is-hidden{% endif %}"{% if hidden %} hidden{% endif %} data-empty-state>
+  <h3 class="empty-state__heading">{{ heading|default:"Nothing here yet" }}</h3>
+  <p class="empty-state__body">{{ body|default:"There is no data to display." }}</p>
+</article>

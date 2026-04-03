@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Review Draft - ResumeTailor{% endblock %}
+
+{% block shell_content %}
+<link rel="stylesheet" href="{% static 'css/components/review_core.css' %}">
+<link rel="stylesheet" href="{% static 'css/components/export_actions.css' %}">
+{% include "tailoring/partials/review_core_panel.html" %}
+{% include "tailoring/partials/review_export_panel.html" %}
+{% endblock %}

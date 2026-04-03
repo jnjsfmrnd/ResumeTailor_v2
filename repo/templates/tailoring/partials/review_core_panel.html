@@ -1,0 +1,130 @@
+<article class="contract-panel review-core-panel" data-review-core-panel>
+  <h2 class="eyebrow">Step 3 of 3</h2>
+  <h3>Review And Edit Draft</h3>
+
+  {% include "components/current_source_badge.html" %}
+
+  {% if run.status == "failed" %}
+    <section class="review-status review-status--error" data-review-error>
+      <h4>Draft generation failed</h4>
+      <p>The draft could not be generated. Please try starting the tailoring run again.</p>
+    </section>
+  {% elif run.status == "processing" or run.status == "pending" %}
+    {% include "components/loading_disc.html" with label="Generating tailored draft..." %}
+  {% elif run.status == "reviewable" %}
+    <form class="review-form" data-review-form data-run-id="{{ run.id }}">
+      {% csrf_token %}
+
+      <section class="review-section">
+        <label class="form-label" for="professional-summary">Professional Summary</label>
+        <textarea
+          id="professional-summary"
+          class="form-textarea"
+          rows="5"
+          name="professionalSummary"
+          data-summary-field
+        >{{ run.professional_summary }}</textarea>
+      </section>
+
+      <section class="review-section">
+        <label class="form-label" for="tailored-skills">Tailored Skills (one per line)</label>
+        <textarea
+          id="tailored-skills"
+          class="form-textarea"
+          rows="6"
+          name="tailoredSkills"
+          data-skills-field
+        >{% for skill in run.tailored_skills %}{{ skill }}{% if not forloop.last %}\n{% endif %}{% endfor %}</textarea>
+      </section>
+
+      <section class="review-section">
+        <label class="form-label" for="tailored-experience">Tailored Experience (JSON)</label>
+        <textarea
+          id="tailored-experience"
+          class="form-textarea"
+          rows="12"
+          name="tailoredExperienceSections"
+          data-experience-field
+        >{{ run.tailored_experience_sections|safe }}</textarea>
+      </section>
+
+      {% if run.truthfulness_notes %}
+      <section class="review-status review-status--warning" data-review-truthfulness>
+        <h4>Truthfulness Notes</h4>
+        <ul>
+          {% for note in run.truthfulness_notes %}
+            <li>{{ note }}</li>
+          {% endfor %}
+        </ul>
+      </section>
+      {% else %}
+      <section class="review-status review-status--success" data-review-success-state>
+        <h4>Grounding Check</h4>
+        <p>No unsupported claims were detected in this draft.</p>
+      </section>
+      {% endif %}
+
+      <div class="review-actions">
+        <button type="submit" class="tactile-button">Save edits</button>
+        <span class="review-feedback" data-review-feedback aria-live="polite"></span>
+      </div>
+    </form>
+  {% else %}
+    {% include "components/empty_state.html" with heading="Draft not available" body="Start a tailoring run to generate a reviewable draft." %}
+  {% endif %}
+</article>
+
+<script>
+(function () {
+  const form = document.querySelector('[data-review-form]');
+  if (!form) return;
+
+  const feedback = document.querySelector('[data-review-feedback]');
+  const runId = form.getAttribute('data-run-id');
+
+  form.addEventListener('submit', async function (event) {
+    event.preventDefault();
+
+    const summary = form.querySelector('[data-summary-field]').value;
+    const skillsRaw = form.querySelector('[data-skills-field]').value;
+    const experienceRaw = form.querySelector('[data-experience-field]').value;
+
+    let experienceSections;
+    try {
+      experienceSections = JSON.parse(experienceRaw || '[]');
+    } catch (_error) {
+      feedback.textContent = 'Experience must be valid JSON.';
+      feedback.className = 'review-feedback review-feedback--error';
+      return;
+    }
+
+    const payload = {
+      professionalSummary: summary,
+      tailoredSkills: skillsRaw
+        .split('\n')
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0),
+      tailoredExperienceSections: experienceSections,
+    };
+
+    try {
+      const response = await fetch(`/api/tailorings/${runId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const body = await response.json();
+        throw new Error(body.error || 'Could not save review edits.');
+      }
+
+      feedback.textContent = 'Edits saved.';
+      feedback.className = 'review-feedback review-feedback--success';
+    } catch (error) {
+      feedback.textContent = error.message || 'Could not save review edits.';
+      feedback.className = 'review-feedback review-feedback--error';
+    }
+  });
+})();
+</script>

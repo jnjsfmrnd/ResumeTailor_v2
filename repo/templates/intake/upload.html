@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Upload Resume — ResumeTailor{% endblock %}
+
+{% block shell_content %}
+<article class="contract-panel">
+  <h2 class="eyebrow">Step 1 of 3</h2>
+  <h3>Upload Your Resume</h3>
+  <p class="body-text">
+    Upload a PDF, DOC, or DOCX resume to begin tailoring it for your target role.
+    Your file is never shared and is only used to generate your tailored output.
+  </p>
+
+  {% include "components/current_source_badge.html" %}
+
+  <form
+    id="upload-form"
+    class="upload-form"
+    enctype="multipart/form-data"
+    data-upload-form
+  >
+    {% csrf_token %}
+    <label class="upload-drop-zone" for="resume-file" data-drop-zone>
+      <span class="upload-drop-zone__icon" aria-hidden="true">📄</span>
+      <span class="upload-drop-zone__label">
+        Drag and drop your resume here, or
+        <span class="upload-drop-zone__browse">browse files</span>
+      </span>
+      <span class="upload-drop-zone__hint">Accepts PDF, DOC, DOCX · Max 10 MB</span>
+      <input
+        id="resume-file"
+        name="file"
+        type="file"
+        accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        class="upload-drop-zone__input"
+        required
+        aria-label="Resume file"
+      >
+    </label>
+
+    <div class="upload-form__actions">
+      <button
+        type="submit"
+        class="tactile-button"
+        data-upload-submit
+      >
+        Upload Resume
+      </button>
+    </div>
+
+    <div class="upload-form__feedback" data-upload-feedback hidden aria-live="polite"></div>
+  </form>
+</article>
+
+<article class="contract-panel contract-panel--secondary">
+  {% include "components/loading_disc.html" with label="Processing your resume…" hidden=True %}
+  {% include "components/empty_state.html" with
+     heading="No resume uploaded yet"
+     body="Upload a PDF, DOC, or DOCX file to get started."
+     hidden=True
+  %}
+</article>
+
+<script>
+(function () {
+  const form = document.querySelector('[data-upload-form]');
+  const feedback = document.querySelector('[data-upload-feedback]');
+  const submitBtn = document.querySelector('[data-upload-submit]');
+
+  if (!form) return;
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const formData = new FormData(form);
+    submitBtn.disabled = true;
+    feedback.hidden = true;
+
+    try {
+      const resp = await fetch('/api/uploads', { method: 'POST', body: formData });
+      const data = await resp.json();
+      if (resp.ok) {
+        feedback.textContent = `✓ "${data.originalFilename}" uploaded successfully (${data.parseStatus}).`;
+        feedback.className = 'upload-form__feedback upload-form__feedback--success';
+      } else {
+        const msg = data.error || JSON.stringify(data.errors || data);
+        feedback.textContent = `Upload failed: ${msg}`;
+        feedback.className = 'upload-form__feedback upload-form__feedback--error';
+      }
+    } catch (err) {
+      feedback.textContent = 'Upload failed due to a network error. Please try again.';
+      feedback.className = 'upload-form__feedback upload-form__feedback--error';
+    } finally {
+      feedback.hidden = false;
+      submitBtn.disabled = false;
+    }
+  });
+})();
+</script>
+{% endblock %}

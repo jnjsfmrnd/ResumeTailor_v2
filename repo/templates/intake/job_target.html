@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Job Description — ResumeTailor{% endblock %}
+
+{% block shell_content %}
+<article class="contract-panel">
+  <h2 class="eyebrow">Step 2 of 3</h2>
+  <h3>Paste Job Description</h3>
+  <p class="body-text">
+    Paste the full job description for the role you are targeting. ResumeTailor will
+    use it to tailor your resume accurately, without inventing unsupported claims.
+  </p>
+
+  {% include "components/current_source_badge.html" %}
+
+  <form id="job-target-form" class="job-target-form" data-job-target-form>
+    {% csrf_token %}
+
+    <div class="form-group">
+      <label class="form-label" for="company-name">Company name <span class="form-hint">(optional)</span></label>
+      <input
+        id="company-name"
+        name="companyName"
+        type="text"
+        class="form-input"
+        placeholder="e.g. Acme Corp"
+        autocomplete="organization"
+      >
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="role-title">Role title <span class="form-hint">(optional)</span></label>
+      <input
+        id="role-title"
+        name="roleTitle"
+        type="text"
+        class="form-input"
+        placeholder="e.g. Senior Software Engineer"
+        autocomplete="organization-title"
+      >
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="description-text">
+        Job description <span class="form-required" aria-hidden="true">*</span>
+      </label>
+      <textarea
+        id="description-text"
+        name="descriptionText"
+        class="form-textarea"
+        rows="12"
+        placeholder="Paste the full job description here…"
+        required
+        aria-required="true"
+      ></textarea>
+    </div>
+
+    <div class="job-target-form__actions">
+      <button type="submit" class="tactile-button" data-job-target-submit>
+        Save &amp; Continue
+      </button>
+    </div>
+
+    <div class="job-target-form__feedback" data-job-target-feedback hidden aria-live="polite"></div>
+  </form>
+</article>
+
+<article class="contract-panel contract-panel--secondary">
+  {% include "components/loading_disc.html" with label="Saving job description…" hidden=True %}
+</article>
+
+<script>
+(function () {
+  const form = document.querySelector('[data-job-target-form]');
+  const feedback = document.querySelector('[data-job-target-feedback]');
+  const submitBtn = document.querySelector('[data-job-target-submit]');
+
+  if (!form) return;
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    submitBtn.disabled = true;
+    feedback.hidden = true;
+
+    const payload = {
+      companyName: form.elements['companyName'].value.trim(),
+      roleTitle: form.elements['roleTitle'].value.trim(),
+      descriptionText: form.elements['descriptionText'].value.trim(),
+    };
+
+    try {
+      const resp = await fetch('/api/job-targets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await resp.json();
+      if (resp.ok) {
+        feedback.textContent = '✓ Job description saved. Redirecting…';
+        feedback.className = 'job-target-form__feedback job-target-form__feedback--success';
+        feedback.hidden = false;
+        // Navigate to tailoring start — update URL as routes are wired
+        window.location.href = '/intake/upload';
+      } else {
+        feedback.textContent = data.error || 'Could not save job description.';
+        feedback.className = 'job-target-form__feedback job-target-form__feedback--error';
+        feedback.hidden = false;
+      }
+    } catch (err) {
+      feedback.textContent = 'A network error occurred. Please try again.';
+      feedback.className = 'job-target-form__feedback job-target-form__feedback--error';
+      feedback.hidden = false;
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+})();
+</script>
+{% endblock %}
