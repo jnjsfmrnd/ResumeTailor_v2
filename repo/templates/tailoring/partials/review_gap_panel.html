@@ -1,0 +1,74 @@
+<section class="gap-panel" aria-labelledby="gap-panel-title">
+  <div class="gap-panel__header">
+    <p class="gap-panel__eyebrow">Gap Intelligence</p>
+    <h2 id="gap-panel-title">Skill Gaps and Project Recommendations</h2>
+  </div>
+
+  {% if gap_payload.skillGapAssessment.coverageSummary %}
+    <p class="gap-panel__summary">{{ gap_payload.skillGapAssessment.coverageSummary }}</p>
+  {% else %}
+    <p class="gap-panel__summary gap-panel__summary--empty">
+      No gap analysis yet. Refresh the panel to generate recommendations.
+    </p>
+  {% endif %}
+
+  <div class="gap-grid">
+    <article class="gap-card">
+      <h3>Missing Requirements</h3>
+      {% if gap_payload.skillGapAssessment.missingRequirements %}
+        <ul>
+          {% for item in gap_payload.skillGapAssessment.missingRequirements %}
+            <li>
+              <strong>{{ item.requirement }}</strong>
+              <span class="gap-chip gap-chip--{{ item.classification }}">{{ item.classification }}</span>
+              <p>{{ item.evidence }}</p>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="gap-empty">No uncovered requirements detected.</p>
+      {% endif %}
+    </article>
+
+    <article class="gap-card">
+      <h3>Transferable Skills</h3>
+      {% if gap_payload.skillGapAssessment.transferableSkills %}
+        <ul>
+          {% for item in gap_payload.skillGapAssessment.transferableSkills %}
+            <li>
+              <strong>{{ item.source }}</strong> -> <strong>{{ item.target }}</strong>
+              <p>{{ item.evidence }}</p>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="gap-empty">No transferable mappings available yet.</p>
+      {% endif %}
+    </article>
+  </div>
+
+  <article class="gap-card gap-card--recommendations">
+    <h3>Micro-Project Recommendations</h3>
+    {% if gap_payload.projectRecommendations %}
+      {% for recommendation in gap_payload.projectRecommendations %}
+        <div class="project-card">
+          <div class="project-card__header">
+            <h4>{{ recommendation.title }}</h4>
+            <span class="gap-chip {% if recommendation.isIncluded %}gap-chip--included{% else %}gap-chip--excluded{% endif %}">
+              {% if recommendation.isIncluded %}Included{% else %}Excluded{% endif %}
+            </span>
+          </div>
+          <p>{{ recommendation.goal }}</p>
+          <pre>{{ recommendation.scopeMarkdown }}</pre>
+          <ul>
+            {% for bullet in recommendation.bullets %}
+              <li>{{ bullet.editedText|default:bullet.generatedText }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="gap-empty">No recommendations generated yet.</p>
+    {% endif %}
+  </article>
+</section>
