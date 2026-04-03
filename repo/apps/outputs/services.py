@@ -10,16 +10,12 @@ from apps.outputs.resume_service import ResumePDFService
 from apps.tailoring.models import TailoringRun
 
 
-def generate_resume_artifact(*, tailoring_run_id: str) -> GeneratedArtifact:
+def generate_resume_artifact(*, tailoring_run: TailoringRun) -> GeneratedArtifact:
     started = perf_counter()
-    run = TailoringRun.objects.select_related(
-        "job_target",
-        "source_document",
-    ).get(id=tailoring_run_id)
-    ensure_export_allowed(run)
+    ensure_export_allowed(tailoring_run)
 
     service = ResumePDFService()
-    artifact = service.generate(tailoring_run=run, approved_bullets=[])
+    artifact = service.generate(tailoring_run=tailoring_run, approved_bullets=[])
 
     record_latency(
         "resume_export",
@@ -29,16 +25,12 @@ def generate_resume_artifact(*, tailoring_run_id: str) -> GeneratedArtifact:
     return artifact
 
 
-def generate_cover_letter_artifact(*, tailoring_run_id: str) -> CoverLetterDraft:
+def generate_cover_letter_artifact(*, tailoring_run: TailoringRun) -> CoverLetterDraft:
     started = perf_counter()
-    run = TailoringRun.objects.select_related(
-        "job_target",
-        "source_document",
-    ).get(id=tailoring_run_id)
-    ensure_export_allowed(run)
+    ensure_export_allowed(tailoring_run)
 
     service = CoverLetterService()
-    draft = service.generate(tailoring_run=run)
+    draft = service.generate(tailoring_run=tailoring_run)
 
     record_latency(
         "cover_letter_generation",

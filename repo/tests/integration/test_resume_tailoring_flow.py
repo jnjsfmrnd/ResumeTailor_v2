@@ -210,6 +210,38 @@ class TestUploadToReviewFlow:
         # The review page must reference the source filename somewhere
         assert b"my_cv.docx" in r4.content
 
+    def test_review_page_returns_404_for_another_workspace(
+        self, fresh_client, db, tmp_path, settings, ai_patch
+    ):
+        settings.USE_LOCAL_FILE_STORAGE = True
+        settings.MEDIA_ROOT = str(tmp_path)
+
+        docx_bytes = _make_docx_bytes()
+        uploaded = SimpleUploadedFile("resume.docx", docx_bytes, content_type=DOCX_CT)
+        r1 = fresh_client.post("/api/uploads", {"file": uploaded})
+        source_doc_id = r1.json()["id"]
+
+        r2 = fresh_client.post(
+            "/api/job-targets",
+            data=json.dumps({"descriptionText": "Python developer."}),
+            content_type="application/json",
+        )
+        job_target_id = r2.json()["id"]
+
+        r3 = fresh_client.post(
+            "/api/tailorings",
+            data=json.dumps(
+                {"sourceDocumentId": source_doc_id, "jobTargetId": job_target_id}
+            ),
+            content_type="application/json",
+        )
+        run_id = r3.json()["id"]
+
+        other_client = Client()
+        r4 = other_client.get(f"/tailoring/{run_id}/review")
+
+        assert r4.status_code == 404
+
 
 # ---------------------------------------------------------------------------
 # Error and empty-state flows

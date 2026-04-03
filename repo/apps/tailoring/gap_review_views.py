@@ -5,10 +5,10 @@ from time import perf_counter
 
 from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods
 
 from apps.common.metrics import record_latency
+from apps.common.views import get_workspace_tailoring_run_queryset
 from apps.tailoring.gap_service import (
     GapServiceError,
     apply_review_updates,
@@ -18,13 +18,13 @@ from apps.tailoring.gap_service import (
 from apps.tailoring.models import TailoringRun
 
 
-@csrf_exempt
 @require_http_methods(["GET", "PATCH"])
 def gap_review_detail(request: HttpRequest, run_id: str) -> JsonResponse:
-    run = get_object_or_404(
+    _, scoped_runs = get_workspace_tailoring_run_queryset(
+        request,
         TailoringRun.objects.select_related("job_target", "source_document"),
-        id=run_id,
     )
+    run = get_object_or_404(scoped_runs, id=run_id)
 
     if request.method == "GET":
         return JsonResponse(serialize_gap_review(run))
@@ -44,11 +44,13 @@ def gap_review_detail(request: HttpRequest, run_id: str) -> JsonResponse:
     return JsonResponse(serialize_gap_review(run))
 
 
-@csrf_exempt
 @require_http_methods(["POST"])
 def refresh_gap_review(request: HttpRequest, run_id: str) -> JsonResponse:
-    qs = TailoringRun.objects.select_related("job_target", "source_document")
-    run = get_object_or_404(qs, id=run_id)
+    _, scoped_runs = get_workspace_tailoring_run_queryset(
+        request,
+        TailoringRun.objects.select_related("job_target", "source_document"),
+    )
+    run = get_object_or_404(scoped_runs, id=run_id)
 
     started = perf_counter()
     try:
@@ -67,12 +69,16 @@ def refresh_gap_review(request: HttpRequest, run_id: str) -> JsonResponse:
 
 @require_GET
 def review_gap_panel(request: HttpRequest, run_id: str) -> HttpResponse:
-    try:
-        run = TailoringRun.objects.select_related(
+    _, scoped_runs = get_workspace_tailoring_run_queryset(
+        request,
+        TailoringRun.objects.select_related(
             "workspace_session",
             "job_target",
             "source_document",
-        ).prefetch_related("project_recommendations__bullets").get(id=run_id)
+        ).prefetch_related("project_recommendations__bullets"),
+    )
+    try:
+        run = scoped_runs.get(id=run_id)
     except TailoringRun.DoesNotExist as exc:
         raise Http404("Tailoring run not found.") from exc
 

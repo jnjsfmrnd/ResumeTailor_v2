@@ -8,12 +8,13 @@ from django.test import Client
 
 @pytest.mark.django_db
 class TestArtifactAPI:
-    def _seed_reviewable_run(self):
+    def _seed_reviewable_run(self, client: Client):
         from apps.common.models import WorkspaceSession
         from apps.intake.models import JobTarget, SourceDocument
         from apps.tailoring.models import TailoringRun
 
-        workspace = WorkspaceSession.objects.create(session_key="contract-artifact")
+        client.get("/api/workspace/current")
+        workspace = WorkspaceSession.objects.get(session_key=client.session.session_key)
         source_document = SourceDocument.objects.create(
             workspace_session=workspace,
             original_filename="resume.pdf",
@@ -39,14 +40,14 @@ class TestArtifactAPI:
         )
 
     def test_post_resume_artifact_returns_201_and_schema(self, monkeypatch):
-        run = self._seed_reviewable_run()
         client = Client()
+        run = self._seed_reviewable_run(client)
 
         from apps.outputs.models import GeneratedArtifact
 
-        def _fake_resume(*, tailoring_run_id):
+        def _fake_resume(*, tailoring_run):
             return GeneratedArtifact.objects.create(
-                tailoring_run_id=tailoring_run_id,
+                tailoring_run=tailoring_run,
                 artifact_type=GeneratedArtifact.ArtifactType.RESUME_PDF,
                 blob_path="artifacts/resume.pdf",
                 content_hash="h1",
@@ -70,14 +71,14 @@ class TestArtifactAPI:
         assert "downloadUrl" in payload
 
     def test_post_cover_letter_returns_201_and_schema(self, monkeypatch):
-        run = self._seed_reviewable_run()
         client = Client()
+        run = self._seed_reviewable_run(client)
 
         from apps.outputs.models import CoverLetterDraft
 
-        def _fake_cover_letter(*, tailoring_run_id):
+        def _fake_cover_letter(*, tailoring_run):
             return CoverLetterDraft.objects.create(
-                tailoring_run_id=tailoring_run_id,
+                tailoring_run=tailoring_run,
                 job_target_id=run.job_target_id,
                 status=CoverLetterDraft.Status.READY,
                 body_markdown="Cover letter body",
@@ -99,3 +100,28 @@ class TestArtifactAPI:
         assert payload["status"] == "ready"
         assert payload["bodyMarkdown"] == "Cover letter body"
         assert "id" in payload
+
+    def test_post_resume_artifact_returns_404_for_another_workspace(self):
+        owner_client = Client()
+        run = self._seed_reviewable_run(owner_client)
+        other_client = Client()
+
+        response = other_client.post(
+            "/api/artifacts/resume",
+            data=json.dumps({"tailoringRunId": str(run.id)}),
+            content_type="application/json",
+        )
+
+        assert response.status_code == 404
+
+    def test_post_resume_artifact_rejects_missing_csrf_token(self):
+        client = Client(enforce_csrf_checks=True)
+        run = self._seed_reviewable_run(client)
+
+        response = client.post(
+            "/api/artifacts/resume",
+            data=json.dumps({"tailoringRunId": str(run.id)}),
+            content_type="application/json",
+        )
+
+        assert response.status_code == 403

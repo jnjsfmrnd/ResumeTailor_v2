@@ -5,11 +5,11 @@ import logging
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods
 
 from apps.common.views import (
     get_or_create_workspace_session,
+    get_workspace_tailoring_run_queryset,
     serialize_job_target,
     serialize_source_document,
     serialize_tailoring_run,
@@ -44,7 +44,6 @@ def _serialize_run(run: TailoringRun) -> dict:
 # ---------------------------------------------------------------------------
 
 
-@csrf_exempt
 @require_http_methods(["POST"])
 def start_tailoring_run(request: HttpRequest) -> JsonResponse:
     workspace = get_or_create_workspace_session(request)
@@ -122,16 +121,17 @@ def start_tailoring_run(request: HttpRequest) -> JsonResponse:
 
 @require_GET
 def get_tailoring_run(request: HttpRequest, run_id: str) -> JsonResponse:
+    _, scoped_runs = get_workspace_tailoring_run_queryset(
+        request,
+        TailoringRun.objects.select_related("source_document", "job_target"),
+    )
     try:
-        run = TailoringRun.objects.select_related(
-            "source_document", "job_target"
-        ).get(id=run_id)
+        run = scoped_runs.get(id=run_id)
     except (TailoringRun.DoesNotExist, ValueError):
         return JsonResponse({"error": "Tailoring run not found."}, status=404)
     return JsonResponse(_serialize_run(run))
 
 
-@csrf_exempt
 @require_http_methods(["GET", "PATCH"])
 def tailoring_run_detail(request: HttpRequest, run_id: str) -> JsonResponse:
     if request.method == "GET":
@@ -144,11 +144,11 @@ def tailoring_run_detail(request: HttpRequest, run_id: str) -> JsonResponse:
 # ---------------------------------------------------------------------------
 
 
-@csrf_exempt
 @require_http_methods(["PATCH"])
 def update_tailoring_run(request: HttpRequest, run_id: str) -> JsonResponse:
+    _, scoped_runs = get_workspace_tailoring_run_queryset(request)
     try:
-        run = TailoringRun.objects.get(id=run_id)
+        run = scoped_runs.get(id=run_id)
     except (TailoringRun.DoesNotExist, ValueError):
         return JsonResponse({"error": "Tailoring run not found."}, status=404)
 
@@ -201,18 +201,21 @@ def update_tailoring_run(request: HttpRequest, run_id: str) -> JsonResponse:
 
 
 def review_page(request: HttpRequest, run_id: str) -> HttpResponse:
-    try:
-        run = TailoringRun.objects.select_related(
+    workspace, scoped_runs = get_workspace_tailoring_run_queryset(
+        request,
+        TailoringRun.objects.select_related(
             "source_document",
             "job_target",
             "workspace_session",
-        ).get(id=run_id)
+        ),
+    )
+    try:
+        run = scoped_runs.get(id=run_id)
     except (TailoringRun.DoesNotExist, ValueError) as exc:
         from django.http import Http404
 
         raise Http404("Tailoring run not found.") from exc
 
-    workspace = run.workspace_session
     # Sync the request session's workspace reference for badge rendering
     request.session["workspace_id"] = str(workspace.id)
 

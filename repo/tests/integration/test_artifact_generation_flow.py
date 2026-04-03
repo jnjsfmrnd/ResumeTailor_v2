@@ -10,12 +10,13 @@ from apps.outputs.models import CoverLetterDraft
 
 @pytest.mark.django_db
 class TestArtifactGenerationFlow:
-    def _seed_reviewable_run(self):
+    def _seed_reviewable_run(self, client: Client):
         from apps.common.models import WorkspaceSession
         from apps.intake.models import JobTarget, SourceDocument
         from apps.tailoring.models import TailoringRun
 
-        workspace = WorkspaceSession.objects.create(session_key="integration-artifact")
+        client.get("/api/workspace/current")
+        workspace = WorkspaceSession.objects.get(session_key=client.session.session_key)
         source_document = SourceDocument.objects.create(
             workspace_session=workspace,
             original_filename="resume.pdf",
@@ -41,12 +42,12 @@ class TestArtifactGenerationFlow:
         )
 
     def test_resume_and_cover_letter_generate_separately(self, monkeypatch):
-        run = self._seed_reviewable_run()
         client = Client()
+        run = self._seed_reviewable_run(client)
 
-        def _fake_cover_letter(*, tailoring_run_id):
+        def _fake_cover_letter(*, tailoring_run):
             return CoverLetterDraft.objects.create(
-                tailoring_run_id=tailoring_run_id,
+                tailoring_run=tailoring_run,
                 job_target_id=run.job_target_id,
                 status=CoverLetterDraft.Status.READY,
                 body_markdown="Generated cover letter",
@@ -74,8 +75,8 @@ class TestArtifactGenerationFlow:
         assert cover_response.json()["status"] == "ready"
 
     def test_resume_export_records_30s_threshold_metric(self, monkeypatch):
-        run = self._seed_reviewable_run()
         client = Client()
+        run = self._seed_reviewable_run(client)
         captured = {}
 
         def _capture(name, elapsed_seconds, *, threshold_seconds=None):
@@ -95,13 +96,13 @@ class TestArtifactGenerationFlow:
         assert captured["threshold"] == 30
 
     def test_cover_letter_generation_records_90s_threshold_metric(self, monkeypatch):
-        run = self._seed_reviewable_run()
         client = Client()
+        run = self._seed_reviewable_run(client)
         captured = {}
 
-        def _fake_cover_letter(*, tailoring_run_id):
+        def _fake_cover_letter(*, tailoring_run):
             return CoverLetterDraft.objects.create(
-                tailoring_run_id=tailoring_run_id,
+                tailoring_run=tailoring_run,
                 job_target_id=run.job_target_id,
                 status=CoverLetterDraft.Status.READY,
                 body_markdown="Generated cover letter",
@@ -114,9 +115,7 @@ class TestArtifactGenerationFlow:
         monkeypatch.setattr("apps.outputs.services.record_latency", _capture)
         monkeypatch.setattr(
             "apps.outputs.services.CoverLetterService.generate",
-            lambda self, *, tailoring_run: _fake_cover_letter(
-                tailoring_run_id=tailoring_run.id
-            ),
+            lambda self, *, tailoring_run: _fake_cover_letter(tailoring_run=tailoring_run),
         )
 
         response = client.post(
@@ -134,7 +133,9 @@ class TestArtifactGenerationFlow:
         from apps.intake.models import JobTarget, SourceDocument
         from apps.tailoring.models import TailoringRun
 
-        workspace = WorkspaceSession.objects.create(session_key="integration-reject")
+        client = Client()
+        client.get("/api/workspace/current")
+        workspace = WorkspaceSession.objects.get(session_key=client.session.session_key)
         source_document = SourceDocument.objects.create(
             workspace_session=workspace,
             original_filename="resume.pdf",
@@ -155,7 +156,6 @@ class TestArtifactGenerationFlow:
             status=TailoringRun.Status.PROCESSING,
         )
 
-        client = Client()
         response = client.post(
             "/api/artifacts/resume",
             data=json.dumps({"tailoringRunId": str(run.id)}),
@@ -163,3 +163,21 @@ class TestArtifactGenerationFlow:
         )
 
         assert response.status_code == 400
+
+    def test_download_returns_404_for_artifact_from_another_workspace(self):
+        owner_client = Client()
+        run = self._seed_reviewable_run(owner_client)
+
+        from apps.outputs.models import GeneratedArtifact
+
+        artifact = GeneratedArtifact.objects.create(
+            tailoring_run=run,
+            artifact_type=GeneratedArtifact.ArtifactType.RESUME_PDF,
+            blob_path="artifacts/resume.pdf",
+            content_hash="h2",
+        )
+
+        other_client = Client()
+        response = other_client.get(f"/api/artifacts/{artifact.id}/download")
+
+        assert response.status_code == 404

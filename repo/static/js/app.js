@@ -1,6 +1,16 @@
 const stateScript = document.querySelector("#workspace-state");
 const refreshButton = document.querySelector("[data-refresh-workspace]");
 
+function getCsrfToken() {
+  const match = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/);
+  if (match) {
+    return decodeURIComponent(match[1]);
+  }
+
+  const tokenInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+  return tokenInput ? tokenInput.value : "";
+}
+
 function parseEmbeddedState() {
   if (!stateScript || !stateScript.textContent) {
     return null;
@@ -18,6 +28,9 @@ function setPressedState(event) {
   button.classList.add("is-pressed");
   window.setTimeout(() => button.classList.remove("is-pressed"), 140);
 }
+
+window.ResumeTailorApp = window.ResumeTailorApp || {};
+window.ResumeTailorApp.getCsrfToken = getCsrfToken;
 
 function applyWorkspaceState(state) {
   if (!state) {

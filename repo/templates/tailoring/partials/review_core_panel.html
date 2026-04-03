@@ -110,7 +110,10 @@
     try {
       const response = await fetch(`/api/tailorings/${runId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': window.ResumeTailorApp.getCsrfToken(),
+        },
         body: JSON.stringify(payload),
       });
 

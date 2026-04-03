@@ -5,18 +5,18 @@ from io import BytesIO
 
 from django.core.exceptions import ValidationError
 from django.http import FileResponse, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods
 
+from apps.common.views import get_or_create_workspace_session
 from apps.intake.repositories import get_storage_backend
 from apps.outputs.models import GeneratedArtifact
 from apps.outputs.services import generate_cover_letter_artifact, generate_resume_artifact
 from apps.tailoring.models import TailoringRun
 
 
-@csrf_exempt
 @require_http_methods(["POST"])
 def create_resume_artifact(request):
+    workspace = get_or_create_workspace_session(request)
     try:
         payload = json.loads(request.body)
     except (json.JSONDecodeError, ValueError):
@@ -27,7 +27,8 @@ def create_resume_artifact(request):
         return JsonResponse({"error": "tailoringRunId is required."}, status=400)
 
     try:
-        artifact = generate_resume_artifact(tailoring_run_id=tailoring_run_id)
+        run = TailoringRun.objects.get(id=tailoring_run_id, workspace_session=workspace)
+        artifact = generate_resume_artifact(tailoring_run=run)
     except TailoringRun.DoesNotExist:
         return JsonResponse({"error": "Tailoring run not found."}, status=404)
     except ValidationError as exc:
@@ -43,9 +44,9 @@ def create_resume_artifact(request):
     )
 
 
-@csrf_exempt
 @require_http_methods(["POST"])
 def create_cover_letter_artifact(request):
+    workspace = get_or_create_workspace_session(request)
     try:
         payload = json.loads(request.body)
     except (json.JSONDecodeError, ValueError):
@@ -56,7 +57,8 @@ def create_cover_letter_artifact(request):
         return JsonResponse({"error": "tailoringRunId is required."}, status=400)
 
     try:
-        draft = generate_cover_letter_artifact(tailoring_run_id=tailoring_run_id)
+        run = TailoringRun.objects.get(id=tailoring_run_id, workspace_session=workspace)
+        draft = generate_cover_letter_artifact(tailoring_run=run)
     except TailoringRun.DoesNotExist:
         return JsonResponse({"error": "Tailoring run not found."}, status=404)
     except ValidationError as exc:
@@ -80,8 +82,12 @@ def create_cover_letter_artifact(request):
 
 @require_GET
 def download_artifact(request, artifact_id: str):
+    workspace = get_or_create_workspace_session(request)
     try:
-        artifact = GeneratedArtifact.objects.get(id=artifact_id)
+        artifact = GeneratedArtifact.objects.select_related("tailoring_run").get(
+            id=artifact_id,
+            tailoring_run__workspace_session=workspace,
+        )
     except (GeneratedArtifact.DoesNotExist, ValueError):
         return JsonResponse({"error": "Artifact not found."}, status=404)
 

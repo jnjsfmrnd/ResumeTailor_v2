@@ -5,7 +5,6 @@ import logging
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods
 
 from apps.common.views import get_or_create_workspace_session
@@ -33,7 +32,6 @@ def upload_page(request: HttpRequest) -> HttpResponse:
 # ---------------------------------------------------------------------------
 
 
-@csrf_exempt
 @require_http_methods(["POST"])
 def upload_resume(request: HttpRequest) -> JsonResponse:
     workspace = get_or_create_workspace_session(request)
@@ -95,7 +93,6 @@ def job_target_page(request: HttpRequest) -> HttpResponse:
 # ---------------------------------------------------------------------------
 
 
-@csrf_exempt
 @require_http_methods(["POST"])
 def create_job_target(request: HttpRequest) -> JsonResponse:
     workspace = get_or_create_workspace_session(request)

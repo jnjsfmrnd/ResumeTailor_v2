@@ -24,6 +24,15 @@ def get_or_create_workspace_session(request: HttpRequest) -> WorkspaceSession:
     return workspace
 
 
+def get_workspace_tailoring_run_queryset(request: HttpRequest, queryset=None):
+    workspace = get_or_create_workspace_session(request)
+    if queryset is None:
+        from apps.tailoring.models import TailoringRun
+
+        queryset = TailoringRun.objects.all()
+    return workspace, queryset.filter(workspace_session=workspace)
+
+
 def serialize_source_document(document) -> dict | None:
     if not document:
         return None

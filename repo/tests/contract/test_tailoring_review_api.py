@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 
 import pytest
+from django.test import Client
 
 from apps.common.models import WorkspaceSession
 from apps.intake.models import JobTarget, SourceDocument
@@ -22,8 +23,10 @@ def _use_gap_review_urlconf(settings):
 
 
 @pytest.fixture
-def reviewable_run(db):
-    ws = WorkspaceSession.objects.create(session_key="gap-contract-session")
+def reviewable_run(client, db):
+    session = client.session
+    session.save()
+    ws = WorkspaceSession.objects.create(session_key=session.session_key)
     doc = SourceDocument.objects.create(
         workspace_session=ws,
         original_filename="resume.pdf",
@@ -132,3 +135,75 @@ def test_patch_tailoring_review_rejects_invalid_payload(client, reviewable_run):
     )
 
     assert response.status_code == 400
+
+
+def test_gap_review_returns_404_for_another_workspace(reviewable_run):
+    from django.test import Client
+
+    other_client = Client()
+
+    response = other_client.get(f"/api/tailorings/{reviewable_run.id}/gap-review")
+
+    assert response.status_code == 404
+
+
+def test_gap_review_patch_returns_404_for_another_workspace(reviewable_run):
+    other_client = Client()
+    recommendation = reviewable_run.project_recommendations.first()
+    bullet = recommendation.bullets.first()
+
+    response = other_client.patch(
+        f"/api/tailorings/{reviewable_run.id}/gap-review",
+        data=json.dumps(
+            {
+                "projectRecommendations": [
+                    {
+                        "id": str(recommendation.id),
+                        "isIncluded": True,
+                        "bullets": [
+                            {
+                                "id": str(bullet.id),
+                                "editedText": "Should not apply.",
+                                "isApproved": True,
+                            }
+                        ],
+                    }
+                ]
+            }
+        ),
+        content_type="application/json",
+    )
+
+    assert response.status_code == 404
+
+
+def test_gap_review_patch_rejects_missing_csrf_token(reviewable_run):
+    client = Client(enforce_csrf_checks=True)
+    token = "b" * 32
+    client.cookies["csrftoken"] = token
+    recommendation = reviewable_run.project_recommendations.first()
+    bullet = recommendation.bullets.first()
+
+    response = client.patch(
+        f"/api/tailorings/{reviewable_run.id}/gap-review",
+        data=json.dumps(
+            {
+                "projectRecommendations": [
+                    {
+                        "id": str(recommendation.id),
+                        "isIncluded": True,
+                        "bullets": [
+                            {
+                                "id": str(bullet.id),
+                                "editedText": "Blocked.",
+                                "isApproved": True,
+                            }
+                        ],
+                    }
+                ]
+            }
+        ),
+        content_type="application/json",
+    )
+
+    assert response.status_code == 403

@@ -4,6 +4,7 @@ import json
 from unittest.mock import patch
 
 import pytest
+from django.test import Client
 
 from apps.common.models import WorkspaceSession
 from apps.intake.models import JobTarget, SourceDocument
@@ -18,8 +19,10 @@ def _use_gap_review_urlconf(settings):
 
 
 @pytest.fixture
-def reviewable_run(db):
-    ws = WorkspaceSession.objects.create(session_key="gap-integration-session")
+def reviewable_run(client, db):
+    session = client.session
+    session.save()
+    ws = WorkspaceSession.objects.create(session_key=session.session_key)
     doc = SourceDocument.objects.create(
         workspace_session=ws,
         original_filename="resume.pdf",
@@ -115,3 +118,11 @@ def test_gap_review_refresh_records_latency_metric(client, reviewable_run):
 
     assert response.status_code == 200
     record_latency_mock.assert_called_once()
+
+
+def test_gap_review_refresh_returns_404_for_another_workspace(reviewable_run):
+    other_client = Client()
+
+    response = other_client.post(f"/api/tailorings/{reviewable_run.id}/gap-review/refresh")
+
+    assert response.status_code == 404

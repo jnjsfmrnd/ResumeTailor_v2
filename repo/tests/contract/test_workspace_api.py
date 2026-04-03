@@ -10,6 +10,7 @@ import io
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import Client
 
 from apps.common.models import WorkspaceSession
 
@@ -153,6 +154,19 @@ class TestUploadResume:
     def test_upload_requires_post_method(self, client, db):
         response = client.get("/api/uploads")
         assert response.status_code == 405
+
+    def test_upload_rejects_missing_csrf_token(self, db, tmp_path, settings):
+        settings.USE_LOCAL_FILE_STORAGE = True
+        settings.MEDIA_ROOT = str(tmp_path)
+        client = Client(enforce_csrf_checks=True)
+        pdf = (
+            b"%PDF-1.4\n1 0 obj\n<</Type /Catalog>>\nendobj\n"
+            b"xref\ntrailer\n<</Size 2 /Root 1 0 R>>\nstartxref\n0\n%%EOF"
+        )
+
+        response = self._upload(client, pdf, "resume.pdf", "application/pdf")
+
+        assert response.status_code == 403
 
     def test_upload_docx_accepted(self, client, db, tmp_path, settings):
         settings.USE_LOCAL_FILE_STORAGE = True

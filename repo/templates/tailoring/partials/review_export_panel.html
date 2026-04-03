@@ -38,7 +38,10 @@
     try {
       const response = await fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': window.ResumeTailorApp.getCsrfToken(),
+        },
         body: JSON.stringify({ tailoringRunId: runId }),
       });
 

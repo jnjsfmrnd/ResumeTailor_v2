@@ -13,6 +13,7 @@ import uuid
 from unittest.mock import MagicMock, patch
 
 import pytest
+from django.test import Client
 
 from apps.common.models import WorkspaceSession
 from apps.intake.models import JobTarget, SourceDocument
@@ -107,6 +108,18 @@ class TestCreateJobTarget:
     def test_create_requires_post_method(self, client, db):
         response = client.get("/api/job-targets")
         assert response.status_code == 405
+
+    def test_create_rejects_missing_csrf_token(self, db):
+        client = Client(enforce_csrf_checks=True)
+        payload = {"descriptionText": "We need a senior Python developer."}
+
+        response = client.post(
+            "/api/job-targets",
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+
+        assert response.status_code == 403
 
     def test_create_sets_workspace_current_job_target(self, client, db):
         payload = {"descriptionText": "Python developer."}
@@ -291,9 +304,10 @@ class TestStartTailoringRun:
 
 class TestGetTailoringRun:
     @pytest.fixture
-    def reviewable_run(self, db):
+    def reviewable_run(self, client, db):
         """Return a reviewable TailoringRun."""
-        ws = WorkspaceSession.objects.create(session_key="review-test-session")
+        client.get("/api/workspace/current")
+        ws = WorkspaceSession.objects.get(session_key=client.session.session_key)
         doc = SourceDocument.objects.create(
             workspace_session=ws,
             original_filename="r.pdf",
@@ -338,6 +352,13 @@ class TestGetTailoringRun:
         response = client.get(f"/api/tailorings/{uuid.uuid4()}")
         assert response.status_code == 404
 
+    def test_get_returns_404_for_run_from_another_workspace(self, db, reviewable_run):
+        other_client = pytest.importorskip("django.test").Client()
+
+        response = other_client.get(f"/api/tailorings/{reviewable_run.id}")
+
+        assert response.status_code == 404
+
 
 # ---------------------------------------------------------------------------
 # PATCH /api/tailorings/{id}
@@ -346,8 +367,9 @@ class TestGetTailoringRun:
 
 class TestUpdateTailoringRun:
     @pytest.fixture
-    def reviewable_run(self, db):
-        ws = WorkspaceSession.objects.create(session_key="patch-test-session")
+    def reviewable_run(self, client, db):
+        client.get("/api/workspace/current")
+        ws = WorkspaceSession.objects.get(session_key=client.session.session_key)
         doc = SourceDocument.objects.create(
             workspace_session=ws,
             original_filename="r.pdf",
@@ -410,6 +432,18 @@ class TestUpdateTailoringRun:
         )
         assert response.status_code == 404
 
+    def test_patch_returns_404_for_run_from_another_workspace(self, db, reviewable_run):
+        payload = {"professionalSummary": "Cross-session edit."}
+        other_client = pytest.importorskip("django.test").Client()
+
+        response = other_client.patch(
+            f"/api/tailorings/{reviewable_run.id}",
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+
+        assert response.status_code == 404
+
     def test_patch_rejects_invalid_json(self, client, reviewable_run):
         response = client.patch(
             f"/api/tailorings/{reviewable_run.id}",
@@ -417,3 +451,16 @@ class TestUpdateTailoringRun:
             content_type="application/json",
         )
         assert response.status_code == 400
+
+    def test_patch_rejects_missing_csrf_token(self, db, reviewable_run):
+        client = Client(enforce_csrf_checks=True)
+        token = "a" * 32
+        client.cookies["csrftoken"] = token
+
+        response = client.patch(
+            f"/api/tailorings/{reviewable_run.id}",
+            data=json.dumps({"professionalSummary": "Blocked."}),
+            content_type="application/json",
+        )
+
+        assert response.status_code == 403
