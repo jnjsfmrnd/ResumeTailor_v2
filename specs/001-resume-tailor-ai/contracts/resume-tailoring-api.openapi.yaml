@@ -1,0 +1,395 @@
+openapi: 3.1.0
+info:
+  title: Resume Tailoring Internal API
+  version: 0.1.0
+  description: |
+    Internal JSON endpoints used by the Django full-stack application to upload
+    a source resume, create tailoring runs, review edits, and generate resume
+    or cover-letter outputs as separate artifacts.
+servers:
+  - url: https://example.com
+paths:
+  /api/workspace/current:
+    get:
+      summary: Get the current workspace state
+      operationId: getCurrentWorkspace
+      responses:
+        '200':
+          description: Current workspace state returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkspaceState'
+  /api/uploads:
+    post:
+      summary: Upload and activate the current source resume
+      operationId: uploadResume
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Upload accepted and set as current source document
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceDocument'
+        '400':
+          description: Unsupported file or invalid request
+  /api/job-targets:
+    post:
+      summary: Save a job description for the current workspace
+      operationId: createJobTarget
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - descriptionText
+              properties:
+                companyName:
+                  type: string
+                roleTitle:
+                  type: string
+                descriptionText:
+                  type: string
+      responses:
+        '201':
+          description: Job target created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobTarget'
+  /api/tailorings:
+    post:
+      summary: Start a tailoring run
+      operationId: createTailoringRun
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - sourceDocumentId
+                - jobTargetId
+              properties:
+                sourceDocumentId:
+                  type: string
+                  format: uuid
+                jobTargetId:
+                  type: string
+                  format: uuid
+      responses:
+        '202':
+          description: Tailoring run started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TailoringRun'
+  /api/tailorings/{tailoringRunId}:
+    get:
+      summary: Retrieve a tailoring run with skill-gap and project output
+      operationId: getTailoringRun
+      parameters:
+        - $ref: '#/components/parameters/TailoringRunId'
+      responses:
+        '200':
+          description: Tailoring run returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TailoringRunDetail'
+    patch:
+      summary: Save user edits and inclusion decisions for a tailoring run
+      operationId: updateTailoringRun
+      parameters:
+        - $ref: '#/components/parameters/TailoringRunId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TailoringRunUpdate'
+      responses:
+        '200':
+          description: Tailoring run updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TailoringRunDetail'
+  /api/artifacts/resume:
+    post:
+      summary: Generate a resume PDF from the approved tailoring run
+      operationId: generateResumeArtifact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - tailoringRunId
+              properties:
+                tailoringRunId:
+                  type: string
+                  format: uuid
+      responses:
+        '201':
+          description: Resume artifact created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneratedArtifact'
+  /api/artifacts/cover-letter:
+    post:
+      summary: Generate a separate cover-letter output from the approved tailoring run
+      operationId: generateCoverLetter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - tailoringRunId
+              properties:
+                tailoringRunId:
+                  type: string
+                  format: uuid
+      responses:
+        '201':
+          description: Cover letter created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoverLetterDraft'
+components:
+  parameters:
+    TailoringRunId:
+      name: tailoringRunId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    WorkspaceState:
+      type: object
+      required:
+        - sessionId
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+        currentSourceDocument:
+          $ref: '#/components/schemas/SourceDocument'
+        currentJobTarget:
+          $ref: '#/components/schemas/JobTarget'
+        latestTailoringRun:
+          $ref: '#/components/schemas/TailoringRun'
+    SourceDocument:
+      type: object
+      required:
+        - id
+        - originalFilename
+        - parseStatus
+        - isCurrent
+      properties:
+        id:
+          type: string
+          format: uuid
+        originalFilename:
+          type: string
+        parseStatus:
+          type: string
+          enum: [uploaded, processing, ready, failed]
+        isCurrent:
+          type: boolean
+    JobTarget:
+      type: object
+      required:
+        - id
+        - descriptionText
+      properties:
+        id:
+          type: string
+          format: uuid
+        companyName:
+          type: string
+        roleTitle:
+          type: string
+        descriptionText:
+          type: string
+        topKeywords:
+          type: array
+          items:
+            type: string
+    TailoringRun:
+      type: object
+      required:
+        - id
+        - status
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending, processing, reviewable, failed]
+    TailoringRunDetail:
+      allOf:
+        - $ref: '#/components/schemas/TailoringRun'
+        - type: object
+          properties:
+            professionalSummary:
+              type: string
+            tailoredSkills:
+              type: array
+              items:
+                type: string
+            tailoredExperienceSections:
+              type: array
+              items:
+                type: object
+            truthfulnessNotes:
+              type: array
+              items:
+                type: string
+            skillGapAssessment:
+              $ref: '#/components/schemas/SkillGapAssessment'
+            projectRecommendations:
+              type: array
+              items:
+                $ref: '#/components/schemas/ProjectRecommendation'
+    TailoringRunUpdate:
+      type: object
+      properties:
+        professionalSummary:
+          type: string
+        tailoredExperienceSections:
+          type: array
+          items:
+            type: object
+        tailoredSkills:
+          type: array
+          items:
+            type: string
+        projectRecommendations:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectRecommendationUpdate'
+    SkillGapAssessment:
+      type: object
+      properties:
+        missingRequirements:
+          type: array
+          items:
+            type: string
+        transferableSkills:
+          type: array
+          items:
+            type: string
+        coverageSummary:
+          type: string
+    ProjectRecommendation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        goal:
+          type: string
+        scopeMarkdown:
+          type: string
+        targetedGaps:
+          type: array
+          items:
+            type: string
+        isIncluded:
+          type: boolean
+        bullets:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectBulletProposal'
+    ProjectRecommendationUpdate:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          format: uuid
+        isIncluded:
+          type: boolean
+        bullets:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProjectBulletProposalUpdate'
+    ProjectBulletProposal:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        generatedText:
+          type: string
+        editedText:
+          type: string
+        isApproved:
+          type: boolean
+    ProjectBulletProposalUpdate:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          format: uuid
+        editedText:
+          type: string
+        isApproved:
+          type: boolean
+    GeneratedArtifact:
+      type: object
+      required:
+        - id
+        - artifactType
+      properties:
+        id:
+          type: string
+          format: uuid
+        artifactType:
+          type: string
+          enum: [resume_pdf, cover_letter_file]
+        downloadUrl:
+          type: string
+          format: uri
+    CoverLetterDraft:
+      type: object
+      required:
+        - id
+        - status
+        - bodyMarkdown
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending, processing, ready, failed]
+        bodyMarkdown:
+          type: string

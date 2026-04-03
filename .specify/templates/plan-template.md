@@ -31,7 +31,19 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- **Code Quality**: Identify the modules being changed, the linting/formatting/
+  static-analysis checks that apply, and any planned refactors needed to keep
+  responsibilities clear.
+- **Testing**: List the automated tests that will fail before implementation and
+  pass after it, including integration coverage for affected flows or
+  contracts.
+- **UX Consistency**: State which existing components, patterns, copy rules, and
+  interface states will be reused; justify any intentional deviation.
+- **Performance**: Define the relevant budget, the measurement method, and the
+  mitigation plan if the change risks regression.
+- **Decision Evidence**: Record notable alternatives considered, the simpler
+  option rejected, and why the selected approach is the smallest acceptable
+  design.
 
 ## Project Structure
 

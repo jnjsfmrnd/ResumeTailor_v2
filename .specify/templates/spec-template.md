@@ -95,6 +95,17 @@
 - **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
 - **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
 
+### Quality Requirements *(mandatory)*
+
+- **QR-001**: The feature MUST define the automated test coverage required to
+  treat the work as done.
+- **QR-002**: The feature MUST specify the expected user-facing states for
+  success, loading, empty, and error conditions.
+- **QR-003**: The feature MUST reuse existing UX patterns or explicitly justify
+  where and why it diverges.
+- **QR-004**: The feature MUST state measurable performance expectations for the
+  primary user flow.
+
 ### Key Entities *(include if feature involves data)*
 
 - **[Entity 1]**: [What it represents, key attributes without implementation]
@@ -113,6 +124,10 @@
 - **SC-002**: [Measurable metric, e.g., "System handles 1000 concurrent users without degradation"]
 - **SC-003**: [User satisfaction metric, e.g., "90% of users successfully complete primary task on first attempt"]
 - **SC-004**: [Business metric, e.g., "Reduce support tickets related to [X] by 50%"]
+
+> Include at least one measurable outcome for quality, user experience, or
+> performance whenever the feature changes a user-facing or latency-sensitive
+> flow.
 
 ## Assumptions
 
