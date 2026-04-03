@@ -1,0 +1,1 @@
+"""ResumeTailor Django project package."""

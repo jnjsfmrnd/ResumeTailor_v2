@@ -1,0 +1,4 @@
+-r base.txt
+gunicorn>=23.0,<24
+azure-identity>=1.17,<2
+django-storages[azure]>=1.14,<2

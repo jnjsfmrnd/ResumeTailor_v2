@@ -1,0 +1,116 @@
+.app-shell {
+  position: relative;
+  padding: 2rem 1.25rem 3rem;
+}
+
+.app-shell__backdrop {
+  position: absolute;
+  inset: 1rem;
+  border-radius: 36px;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.7), transparent 18%),
+    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.5), transparent 14%),
+    linear-gradient(145deg, rgba(74, 82, 184, 0.18), rgba(255, 255, 255, 0.42));
+  box-shadow: var(--shadow-console);
+}
+
+.console-header,
+.console-grid {
+  position: relative;
+  z-index: 1;
+}
+
+.console-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: 1180px;
+  margin: 0 auto 1.5rem;
+}
+
+.console-header h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.75rem);
+  letter-spacing: 0.03em;
+}
+
+.console-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+  gap: 1.25rem;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.console-card {
+  position: relative;
+  overflow: hidden;
+  padding: 1.35rem;
+  border: 1px solid rgba(74, 82, 184, 0.16);
+  border-radius: var(--radius-card);
+  background: linear-gradient(180deg, rgba(252, 252, 254, 0.95), rgba(231, 231, 235, 0.92));
+  box-shadow: 0 18px 35px rgba(32, 35, 74, 0.13);
+}
+
+.console-card__handle {
+  position: absolute;
+  top: -38px;
+  right: 1.5rem;
+  width: 98px;
+  height: 78px;
+  border: 11px solid rgba(74, 82, 184, 0.17);
+  border-radius: 28px;
+}
+
+.console-card__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.console-card__label {
+  margin: 0 0 0.5rem;
+  color: var(--color-indigo-700);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.contract-layout {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.contract-panel {
+  min-height: 220px;
+  padding: 1.15rem;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top right, rgba(74, 82, 184, 0.13), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(223, 225, 233, 0.95));
+  border: 1px solid rgba(74, 82, 184, 0.1);
+}
+
+.contract-panel--secondary {
+  background:
+    radial-gradient(circle at top right, rgba(255, 143, 63, 0.18), transparent 24%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(228, 229, 236, 0.95));
+}
+
+@media (max-width: 860px) {
+  .console-header,
+  .console-card__header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .console-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,59 @@
+<div class="app-shell">
+  <div class="app-shell__backdrop" aria-hidden="true"></div>
+  <header class="console-header">
+    <div>
+      <p class="eyebrow">AI Resume Tailoring Workflow</p>
+      <h1>ResumeTailor Console</h1>
+    </div>
+    <div class="status-led" data-status-led>
+      <span class="status-led__dot"></span>
+      <span>Workspace Ready</span>
+    </div>
+  </header>
+
+  <main class="console-grid">
+    <section class="console-card console-card--hero">
+      <div class="console-card__handle" aria-hidden="true"></div>
+      <p class="console-card__label">Current Session</p>
+      <div class="status-stack" data-workspace-panel>
+        <div>
+          <span class="status-pill">Session</span>
+          <strong>{{ workspace.id }}</strong>
+        </div>
+        <div>
+          <span class="status-pill">Source</span>
+          <strong data-current-source>{{ workspace.current_source_document.original_filename|default:"No resume uploaded yet" }}</strong>
+        </div>
+        <div>
+          <span class="status-pill">Target</span>
+          <strong data-current-target>{{ workspace.current_job_target.role_title|default:"No job target yet" }}</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="console-card console-card--main">
+      <div class="console-card__header">
+        <p class="console-card__label">Lane A Foundation</p>
+        <button class="tactile-button" type="button" data-refresh-workspace>Refresh state</button>
+      </div>
+      <div class="contract-layout">
+        {% block shell_content %}
+          <article class="contract-panel">
+            <h2>Shared foundation ready for story lanes</h2>
+            <p>
+              The platform shell, storage adapters, parsing services, and AI client contracts are now
+              centralized here so feature lanes can build on a stable base.
+            </p>
+          </article>
+          <article class="contract-panel contract-panel--secondary">
+            <h2>Design contract</h2>
+            <p>
+              Indigo-led surfaces, spice-orange actions, platinum-grey panels, and tactile press states
+              define the GameCube-inspired application shell.
+            </p>
+          </article>
+        {% endblock %}
+      </div>
+    </section>
+  </main>
+</div>

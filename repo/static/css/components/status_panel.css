@@ -1,0 +1,43 @@
+.status-led {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 0.95rem;
+  border-radius: 999px;
+  background: rgba(23, 24, 31, 0.9);
+  color: var(--color-white);
+}
+
+.status-led__dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--color-orange-500);
+  box-shadow: 0 0 0 6px rgba(255, 143, 63, 0.12);
+}
+
+.status-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.status-stack strong {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 1rem;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 4.75rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(74, 82, 184, 0.14);
+  color: var(--color-indigo-900);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}

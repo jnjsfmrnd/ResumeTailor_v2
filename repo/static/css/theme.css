@@ -1,0 +1,73 @@
+:root {
+  --color-indigo-700: #4a52b8;
+  --color-indigo-900: #252b6d;
+  --color-orange-500: #ff8f3f;
+  --color-orange-600: #e86f1f;
+  --color-platinum: #e7e7eb;
+  --color-platinum-strong: #c9cad3;
+  --color-jet: #17181f;
+  --color-red: #dd3d3d;
+  --color-white: #fcfcfe;
+  --shadow-console: 0 24px 60px rgba(19, 21, 44, 0.26);
+  --shadow-button: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 10px 20px rgba(34, 28, 79, 0.24);
+  --radius-card: 28px;
+  --radius-button: 999px;
+  --font-display: "Trebuchet MS", "Segoe UI", sans-serif;
+  --font-body: "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  color: var(--color-jet);
+  background:
+    radial-gradient(circle at 20% 18%, rgba(255, 143, 63, 0.16), transparent 24%),
+    radial-gradient(circle at 76% 24%, rgba(74, 82, 184, 0.25), transparent 20%),
+    linear-gradient(180deg, #f7f8fc 0%, #dbdde7 100%);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.eyebrow {
+  margin: 0 0 0.35rem;
+  color: var(--color-indigo-700);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.tactile-button {
+  border: 0;
+  border-radius: var(--radius-button);
+  padding: 0.85rem 1.25rem;
+  color: var(--color-white);
+  background: linear-gradient(180deg, var(--color-orange-500), var(--color-orange-600));
+  box-shadow: var(--shadow-button);
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+}
+
+.tactile-button:is(:hover, :focus-visible) {
+  filter: brightness(1.04);
+}
+
+.tactile-button.is-pressed,
+.tactile-button:active {
+  transform: translateY(2px) scale(0.99);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.18);
+}

@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "resumetailor"
+version = "0.1.0"
+description = "AI-assisted resume tailoring workflow"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = [
+  "node_modules",
+  "playwright-report",
+  "test-results",
+]
+
+[tool.ruff.lint]
+select = [
+  "E",
+  "F",
+  "I",
+  "B",
+  "UP",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "resumetailor.settings.dev"
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "--strict-markers --disable-warnings"
+markers = [
+  "contract: contract-level API validation",
+  "integration: integration coverage",
+  "e2e: browser smoke coverage",
+]
