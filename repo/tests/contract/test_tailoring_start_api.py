@@ -248,6 +248,31 @@ class TestStartTailoringRun:
             )
         assert response.json()["status"] == TailoringRun.Status.REVIEWABLE
 
+    def test_start_uses_local_fallback_when_token_is_missing_in_dev(
+        self, client, prepared_workspace, settings
+    ):
+        ws, doc, target = prepared_workspace
+        settings.GITHUB_MODELS_TOKEN = ""
+        settings.GITHUB_MODELS_ENABLE_DEV_FALLBACK = True
+
+        response = client.post(
+            "/api/tailorings",
+            data=json.dumps(
+                {
+                    "sourceDocumentId": str(doc.id),
+                    "jobTargetId": str(target.id),
+                }
+            ),
+            content_type="application/json",
+        )
+
+        data = response.json()
+        assert response.status_code == 202
+        assert data["status"] == TailoringRun.Status.REVIEWABLE
+        assert data["professionalSummary"]
+        assert data["truthfulnessNotes"]
+        assert "Local development fallback" in data["truthfulnessNotes"][0]
+
     def test_start_rejects_missing_source_document_id(self, client, prepared_workspace):
         ws, doc, target = prepared_workspace
         payload = {"jobTargetId": str(target.id)}

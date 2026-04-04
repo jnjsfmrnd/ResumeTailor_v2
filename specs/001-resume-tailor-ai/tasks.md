@@ -41,9 +41,9 @@
 
 ## Phase 3: User Story 1 - Tailor Resume For A Target Role (Priority: P1) 🎯 MVP
 
-**Goal**: Let a user upload a resume, paste a job description, generate a truthful tailored draft, edit it, and see the currently active source document in the UI.
+**Goal**: Let a user complete upload, job description entry, and generation from the one-page home workspace, then generate a truthful tailored draft, edit it, and see the currently active source document in the UI.
 
-**Independent Test**: Upload a supported resume, paste a job description, generate a reviewable draft, manually edit it, and confirm the active source filename and core UI states are visible without unsupported claims.
+**Independent Test**: Open the home route, upload a supported resume, paste a job description on the same page, generate a reviewable draft, manually edit it, and confirm the active source filename plus loading/button-blocking states are visible without unsupported claims.
 
 ### Tests for User Story 1 ⚠️
 

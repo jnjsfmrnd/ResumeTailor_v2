@@ -1,104 +1,612 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Upload Resume — ResumeTailor{% endblock %}
+{% block title %}ResumeTailor Workspace — ResumeTailor{% endblock %}
 
 {% block shell_content %}
-<article class="contract-panel">
-  <h2 class="eyebrow">Step 1 of 3</h2>
-  <h3>Upload Your Resume</h3>
-  <p class="body-text">
-    Upload a PDF, DOC, or DOCX resume to begin tailoring it for your target role.
-    Your file is never shared and is only used to generate your tailored output.
-  </p>
+<style>
+  .one-page-workspace {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
 
-  {% include "components/current_source_badge.html" %}
+  .one-page-workspace .contract-panel {
+    min-height: 0;
+  }
 
-  <form
-    id="upload-form"
-    class="upload-form"
-    enctype="multipart/form-data"
-    data-upload-form
-  >
-    {% csrf_token %}
-    <label class="upload-drop-zone" for="resume-file" data-drop-zone>
-      <span class="upload-drop-zone__icon" aria-hidden="true">📄</span>
-      <span class="upload-drop-zone__label">
-        Drag and drop your resume here, or
-        <span class="upload-drop-zone__browse">browse files</span>
-      </span>
-      <span class="upload-drop-zone__hint">Accepts PDF, DOC, DOCX · Max 10 MB</span>
-      <input
-        id="resume-file"
-        name="file"
-        type="file"
-        accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        class="upload-drop-zone__input"
-        required
-        aria-label="Resume file"
-      >
-    </label>
+  .workflow-form {
+    display: grid;
+    gap: 0.85rem;
+  }
 
-    <div class="upload-form__actions">
-      <button
-        type="submit"
-        class="tactile-button"
-        data-upload-submit
-      >
-        Upload Resume
+  .form-group {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .form-label {
+    font-weight: 700;
+    color: var(--color-indigo-900);
+  }
+
+  .form-hint {
+    font-weight: 400;
+    color: rgba(37, 43, 109, 0.78);
+  }
+
+  .form-input,
+  .form-textarea {
+    width: 100%;
+    border: 1px solid rgba(74, 82, 184, 0.24);
+    border-radius: 12px;
+    padding: 0.7rem 0.8rem;
+    background: rgba(255, 255, 255, 0.94);
+  }
+
+  .upload-drop-zone {
+    display: grid;
+    gap: 0.5rem;
+    border: 1px dashed rgba(74, 82, 184, 0.35);
+    border-radius: 12px;
+    padding: 0.85rem;
+    background: rgba(255, 255, 255, 0.78);
+  }
+
+  .upload-drop-zone__label {
+    font-weight: 600;
+  }
+
+  .upload-drop-zone__browse {
+    text-decoration: underline;
+    text-underline-offset: 0.12rem;
+  }
+
+  .workflow-actions,
+  .export-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .tactile-button--secondary {
+    background: linear-gradient(180deg, var(--color-indigo-700), var(--color-indigo-900));
+  }
+
+  .workflow-status {
+    min-height: 1.4rem;
+    font-weight: 600;
+  }
+
+  .workflow-status--success {
+    color: #0b824a;
+  }
+
+  .workflow-status--error {
+    color: var(--color-red);
+  }
+
+  .run-status {
+    border-radius: 12px;
+    border: 1px solid rgba(74, 82, 184, 0.2);
+    background: rgba(255, 255, 255, 0.7);
+    padding: 0.65rem 0.75rem;
+    font-size: 0.93rem;
+  }
+
+  .loading-disc {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .loading-disc__spinner {
+    width: 1.1rem;
+    height: 1.1rem;
+    border-radius: 50%;
+    border: 2px solid rgba(74, 82, 184, 0.25);
+    border-top-color: rgba(74, 82, 184, 0.95);
+    animation: spin 900ms linear infinite;
+  }
+
+  .export-actions__status {
+    min-height: 1.5rem;
+    font-weight: 600;
+  }
+
+  .export-actions__status--success {
+    color: var(--color-indigo-900);
+  }
+
+  .export-actions__status--error {
+    color: var(--color-red);
+  }
+
+  .export-actions__downloads {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .export-actions__download-link {
+    color: var(--color-indigo-900);
+    text-decoration: underline;
+    text-underline-offset: 0.15rem;
+  }
+
+  .tactile-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+    filter: grayscale(0.15);
+    box-shadow: none;
+    transform: none;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+</style>
+
+<div class="one-page-workspace">
+  <article class="contract-panel">
+    <h2 class="eyebrow">One-Page Flow</h2>
+    <h3>Upload Resume And Paste Job Description</h3>
+    <p class="body-text">
+      Upload your resume and provide your target role details on this page, then run all generation
+      actions from the same workspace.
+    </p>
+
+    {% include "components/current_source_badge.html" %}
+
+    <form id="upload-form" class="workflow-form" enctype="multipart/form-data" data-upload-form>
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label" for="resume-file">Resume file</label>
+        <label class="upload-drop-zone" for="resume-file">
+          <span class="upload-drop-zone__label">
+            Drag and drop your resume here, or
+            <span class="upload-drop-zone__browse">browse files</span>
+          </span>
+          <span class="form-hint">Accepts PDF, DOC, DOCX (max 10 MB)</span>
+          <input
+            id="resume-file"
+            name="file"
+            type="file"
+            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            required
+          >
+        </label>
+      </div>
+
+      <div class="workflow-actions">
+        <button type="submit" class="tactile-button" data-action-button data-upload-submit>
+          Upload Resume
+        </button>
+      </div>
+    </form>
+
+    <form id="job-target-form" class="workflow-form" data-job-target-form>
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label class="form-label" for="company-name">Company name <span class="form-hint">(optional)</span></label>
+        <input
+          id="company-name"
+          name="companyName"
+          type="text"
+          class="form-input"
+          placeholder="e.g. Acme Corp"
+          value="{{ workspace.current_job_target.company_name|default:'' }}"
+        >
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="role-title">Role title <span class="form-hint">(optional)</span></label>
+        <input
+          id="role-title"
+          name="roleTitle"
+          type="text"
+          class="form-input"
+          placeholder="e.g. Senior Software Engineer"
+          value="{{ workspace.current_job_target.role_title|default:'' }}"
+        >
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="description-text">Job description</label>
+        <textarea
+          id="description-text"
+          name="descriptionText"
+          class="form-textarea"
+          rows="9"
+          placeholder="Paste the full job description here..."
+          required
+        >{{ workspace.current_job_target.description_text|default:'' }}</textarea>
+      </div>
+
+      <div class="workflow-actions">
+        <button type="submit" class="tactile-button tactile-button--secondary" data-action-button data-job-target-submit>
+          Save Job Description
+        </button>
+      </div>
+    </form>
+
+    <div class="workflow-status" data-workflow-feedback aria-live="polite"></div>
+  </article>
+
+  <article class="contract-panel contract-panel--secondary">
+    <h2 class="eyebrow">Generation</h2>
+    <h3>Run Tailoring And Exports</h3>
+    <p class="body-text">All generation buttons are available here and are blocked while processing.</p>
+
+    <div class="run-status" data-run-state>
+      Tailoring run: <strong data-run-status-label>Not started</strong>
+    </div>
+
+    {% include "components/loading_disc.html" with label="Working..." hidden=True %}
+
+    <div class="workflow-actions">
+      <button type="button" class="tactile-button" data-action-button data-start-tailoring>
+        Generate Tailored Draft
+      </button>
+      <button type="button" class="tactile-button tactile-button--secondary" data-open-review disabled>
+        Open Latest Review
       </button>
     </div>
 
-    <div class="upload-form__feedback" data-upload-feedback hidden aria-live="polite"></div>
-  </form>
-</article>
+    <div class="export-actions">
+      <button type="button" class="tactile-button" data-action-button data-generate-resume disabled>
+        Generate Resume PDF
+      </button>
+      <button type="button" class="tactile-button tactile-button--secondary" data-action-button data-generate-cover-letter disabled>
+        Generate Cover Letter
+      </button>
+    </div>
 
-<article class="contract-panel contract-panel--secondary">
-  {% include "components/loading_disc.html" with label="Processing your resume…" hidden=True %}
-  {% include "components/empty_state.html" with
-     heading="No resume uploaded yet"
-     body="Upload a PDF, DOC, or DOCX file to get started."
-     hidden=True
-  %}
-</article>
+    <div class="export-actions__status" data-export-feedback aria-live="polite"></div>
+
+    <div class="export-actions__downloads" data-export-downloads hidden>
+      <a class="export-actions__download-link" data-resume-download hidden>Download resume PDF</a>
+      <a class="export-actions__download-link" data-cover-letter-download hidden>Download cover letter</a>
+    </div>
+  </article>
+</div>
 
 <script>
 (function () {
-  const form = document.querySelector('[data-upload-form]');
-  const feedback = document.querySelector('[data-upload-feedback]');
-  const submitBtn = document.querySelector('[data-upload-submit]');
+  const uploadForm = document.querySelector('[data-upload-form]');
+  const jobTargetForm = document.querySelector('[data-job-target-form]');
+  const workflowFeedback = document.querySelector('[data-workflow-feedback]');
+  const exportFeedback = document.querySelector('[data-export-feedback]');
+  const loadingDisc = document.querySelector('[data-loading-disc]');
+  const loadingLabel = loadingDisc ? loadingDisc.querySelector('.loading-disc__label') : null;
+  const actionButtons = Array.from(document.querySelectorAll('[data-action-button]'));
+  const runStatusLabel = document.querySelector('[data-run-status-label]');
 
-  if (!form) return;
+  const startTailoringButton = document.querySelector('[data-start-tailoring]');
+  const openReviewButton = document.querySelector('[data-open-review]');
+  const resumeButton = document.querySelector('[data-generate-resume]');
+  const coverLetterButton = document.querySelector('[data-generate-cover-letter]');
 
-  form.addEventListener('submit', async function (e) {
-    e.preventDefault();
-    const formData = new FormData(form);
-    submitBtn.disabled = true;
-    feedback.hidden = true;
+  const downloads = document.querySelector('[data-export-downloads]');
+  const resumeDownload = document.querySelector('[data-resume-download]');
+  const coverLetterDownload = document.querySelector('[data-cover-letter-download]');
+
+  const stateScript = document.querySelector('#workspace-state');
+
+  let sourceDocumentId = null;
+  let jobTargetId = null;
+  let runId = null;
+  let runStatus = null;
+
+  function parseEmbeddedState() {
+    if (!stateScript || !stateScript.textContent) return null;
+    try {
+      return JSON.parse(stateScript.textContent);
+    } catch (_error) {
+      return null;
+    }
+  }
+
+  function setBusy(isBusy, label) {
+    if (loadingDisc) {
+      loadingDisc.hidden = !isBusy;
+    }
+    if (loadingLabel && label) {
+      loadingLabel.textContent = label;
+    }
+    if (isBusy) {
+      actionButtons.forEach((button) => {
+        button.disabled = true;
+      });
+      return;
+    }
+
+    actionButtons.forEach((button) => {
+      button.disabled = false;
+    });
+    updateExportAvailability();
+  }
+
+  function setWorkflowFeedback(message, type) {
+    workflowFeedback.textContent = message;
+    workflowFeedback.className = type
+      ? `workflow-status workflow-status--${type}`
+      : 'workflow-status';
+  }
+
+  function setExportFeedback(message, type) {
+    exportFeedback.textContent = message;
+    exportFeedback.className = type
+      ? `export-actions__status export-actions__status--${type}`
+      : 'export-actions__status';
+  }
+
+  function setRunStatusText(text) {
+    if (runStatusLabel) {
+      runStatusLabel.textContent = text;
+    }
+  }
+
+  function updateExportAvailability() {
+    const ready = runStatus === 'reviewable';
+    if (openReviewButton) {
+      openReviewButton.disabled = !runId;
+    }
+    if (resumeButton) {
+      resumeButton.disabled = !ready;
+    }
+    if (coverLetterButton) {
+      coverLetterButton.disabled = !ready;
+    }
+  }
+
+  function refreshHeaderState(sourceName, targetName) {
+    const currentSource = document.querySelector('[data-current-source]');
+    const currentTarget = document.querySelector('[data-current-target]');
+    if (currentSource && sourceName) {
+      currentSource.textContent = sourceName;
+    }
+    if (currentTarget && targetName) {
+      currentTarget.textContent = targetName;
+    }
+  }
+
+  function applyState(state) {
+    if (!state) return;
+    sourceDocumentId = state.currentSourceDocument?.id || sourceDocumentId;
+    jobTargetId = state.currentJobTarget?.id || jobTargetId;
+    runId = state.latestTailoringRun?.id || runId;
+    runStatus = state.latestTailoringRun?.status || runStatus;
+
+    if (runStatus) {
+      setRunStatusText(runStatus);
+    }
+    updateExportAvailability();
+
+    refreshHeaderState(
+      state.currentSourceDocument?.originalFilename,
+      state.currentJobTarget?.roleTitle
+    );
+  }
+
+  async function uploadResume() {
+    const formData = new FormData(uploadForm);
+    setBusy(true, 'Uploading resume...');
+    setWorkflowFeedback('', null);
 
     try {
-      const resp = await fetch('/api/uploads', {
+      const response = await fetch('/api/uploads', {
         method: 'POST',
-        headers: { 'X-CSRFToken': window.ResumeTailorApp.getCsrfToken() },
+        headers: {
+          'X-CSRFToken': window.ResumeTailorApp.getCsrfToken(),
+        },
         body: formData,
       });
-      const data = await resp.json();
-      if (resp.ok) {
-        feedback.textContent = `✓ "${data.originalFilename}" uploaded successfully (${data.parseStatus}).`;
-        feedback.className = 'upload-form__feedback upload-form__feedback--success';
-      } else {
-        const msg = data.error || JSON.stringify(data.errors || data);
-        feedback.textContent = `Upload failed: ${msg}`;
-        feedback.className = 'upload-form__feedback upload-form__feedback--error';
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || JSON.stringify(payload.errors || payload));
       }
-    } catch (err) {
-      feedback.textContent = 'Upload failed due to a network error. Please try again.';
-      feedback.className = 'upload-form__feedback upload-form__feedback--error';
+
+      sourceDocumentId = payload.id;
+      refreshHeaderState(payload.originalFilename, null);
+      setWorkflowFeedback(
+        `Resume uploaded: "${payload.originalFilename}" (${payload.parseStatus}).`,
+        'success'
+      );
+    } catch (error) {
+      setWorkflowFeedback(error.message || 'Upload failed.', 'error');
     } finally {
-      feedback.hidden = false;
-      submitBtn.disabled = false;
+      setBusy(false, null);
     }
-  });
+  }
+
+  async function saveJobTarget() {
+    const payload = {
+      companyName: jobTargetForm.elements.companyName.value.trim(),
+      roleTitle: jobTargetForm.elements.roleTitle.value.trim(),
+      descriptionText: jobTargetForm.elements.descriptionText.value.trim(),
+    };
+
+    if (!payload.descriptionText) {
+      setWorkflowFeedback('Job description is required.', 'error');
+      return;
+    }
+
+    setBusy(true, 'Saving job description...');
+    setWorkflowFeedback('', null);
+
+    try {
+      const response = await fetch('/api/job-targets', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': window.ResumeTailorApp.getCsrfToken(),
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const body = await response.json();
+      if (!response.ok) {
+        throw new Error(body.error || 'Could not save job description.');
+      }
+
+      jobTargetId = body.id;
+      refreshHeaderState(null, body.roleTitle || 'Saved target');
+      setWorkflowFeedback('Job description saved.', 'success');
+    } catch (error) {
+      setWorkflowFeedback(error.message || 'Could not save job description.', 'error');
+    } finally {
+      setBusy(false, null);
+    }
+  }
+
+  async function generateTailoringDraft() {
+    if (!sourceDocumentId) {
+      setExportFeedback('Upload a resume before generating a draft.', 'error');
+      return;
+    }
+    if (!jobTargetId) {
+      setExportFeedback('Save a job description before generating a draft.', 'error');
+      return;
+    }
+
+    setBusy(true, 'Generating tailored draft...');
+    setExportFeedback('', null);
+
+    try {
+      const response = await fetch('/api/tailorings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': window.ResumeTailorApp.getCsrfToken(),
+        },
+        body: JSON.stringify({
+          sourceDocumentId,
+          jobTargetId,
+        }),
+      });
+
+      const body = await response.json();
+      if (!response.ok && response.status !== 202) {
+        throw new Error(body.error || 'Failed to generate tailoring draft.');
+      }
+
+      runId = body.id;
+      runStatus = body.status;
+      setRunStatusText(runStatus || 'unknown');
+
+      if (runStatus === 'reviewable') {
+        setExportFeedback('Tailored draft is ready. You can generate outputs now.', 'success');
+      } else if (runStatus === 'failed') {
+        setExportFeedback('Draft generation failed. Please retry.', 'error');
+      } else {
+        setExportFeedback(`Tailoring run status: ${runStatus}.`, 'success');
+      }
+      updateExportAvailability();
+    } catch (error) {
+      setExportFeedback(error.message || 'Failed to generate tailoring draft.', 'error');
+    } finally {
+      setBusy(false, null);
+    }
+  }
+
+  async function runExport(kind) {
+    if (!runId) {
+      setExportFeedback('Generate a tailoring draft first.', 'error');
+      return;
+    }
+
+    setBusy(true, kind === 'resume' ? 'Generating resume PDF...' : 'Generating cover letter...');
+    setExportFeedback('', null);
+
+    const endpoint = kind === 'resume' ? '/api/artifacts/resume' : '/api/artifacts/cover-letter';
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': window.ResumeTailorApp.getCsrfToken(),
+        },
+        body: JSON.stringify({ tailoringRunId: runId }),
+      });
+
+      const payload = await response.json();
+      if (!response.ok) {
+        throw new Error(payload.error || 'Generation failed.');
+      }
+
+      downloads.hidden = false;
+
+      if (kind === 'resume' && payload.downloadUrl) {
+        resumeDownload.hidden = false;
+        resumeDownload.href = payload.downloadUrl;
+      }
+
+      if (kind === 'cover-letter' && payload.downloadUrl) {
+        coverLetterDownload.hidden = false;
+        coverLetterDownload.href = payload.downloadUrl;
+      }
+
+      setExportFeedback(
+        kind === 'resume' ? 'Resume PDF generated.' : 'Cover letter generated.',
+        'success'
+      );
+    } catch (error) {
+      setExportFeedback(error.message || 'Generation failed.', 'error');
+    } finally {
+      setBusy(false, null);
+    }
+  }
+
+  if (uploadForm) {
+    uploadForm.addEventListener('submit', async function (event) {
+      event.preventDefault();
+      await uploadResume();
+    });
+  }
+
+  if (jobTargetForm) {
+    jobTargetForm.addEventListener('submit', async function (event) {
+      event.preventDefault();
+      await saveJobTarget();
+    });
+  }
+
+  if (startTailoringButton) {
+    startTailoringButton.addEventListener('click', async function () {
+      await generateTailoringDraft();
+    });
+  }
+
+  if (openReviewButton) {
+    openReviewButton.addEventListener('click', function () {
+      if (!runId) {
+        setExportFeedback('Generate a tailoring draft first.', 'error');
+        return;
+      }
+
+      window.location.assign(`/tailoring/${runId}/review`);
+    });
+  }
+
+  if (resumeButton) {
+    resumeButton.addEventListener('click', async function () {
+      await runExport('resume');
+    });
+  }
+
+  if (coverLetterButton) {
+    coverLetterButton.addEventListener('click', async function () {
+      await runExport('cover-letter');
+    });
+  }
+
+  applyState(parseEmbeddedState());
 })();
 </script>
 {% endblock %}

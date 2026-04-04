@@ -97,6 +97,9 @@ AZURE_STORAGE_CONTAINER = os.getenv("AZURE_STORAGE_CONTAINER", "resume-tailor")
 GITHUB_MODELS_ENDPOINT = os.getenv("GITHUB_MODELS_ENDPOINT", "https://models.inference.ai.azure.com")
 GITHUB_MODELS_MODEL = os.getenv("GITHUB_MODELS_MODEL", "gpt-4.1-mini")
 GITHUB_MODELS_TOKEN = os.getenv("GITHUB_MODELS_TOKEN", "")
+GITHUB_MODELS_ENABLE_DEV_FALLBACK = (
+    os.getenv("GITHUB_MODELS_ENABLE_DEV_FALLBACK", "false").lower() == "true"
+)
 GITHUB_MODELS_TIMEOUT = int(os.getenv("GITHUB_MODELS_TIMEOUT", "90"))
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

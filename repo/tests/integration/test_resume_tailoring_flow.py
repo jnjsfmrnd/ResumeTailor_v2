@@ -249,10 +249,28 @@ class TestUploadToReviewFlow:
 
 
 class TestErrorAndEmptyStates:
-    def test_upload_page_renders_empty_state(self, fresh_client, db):
-        r = fresh_client.get("/intake/upload")
+    def test_home_route_renders_one_page_workspace_empty_state(self, fresh_client, db):
+        r = fresh_client.get("/")
         assert r.status_code == 200
         assert b"No resume uploaded yet" in r.content
+
+    def test_home_route_contains_upload_job_target_and_generation_controls(
+        self, fresh_client, db
+    ):
+        r = fresh_client.get("/")
+        assert r.status_code == 200
+        assert b"data-upload-form" in r.content
+        assert b"data-job-target-form" in r.content
+        assert b"Job description" in r.content
+        assert b"Generate Tailored Draft" in r.content
+        assert b"Generate Resume PDF" in r.content
+        assert b"Generate Cover Letter" in r.content
+
+    def test_home_route_disables_export_buttons_until_reviewable(self, fresh_client, db):
+        r = fresh_client.get("/")
+        assert r.status_code == 200
+        assert b"data-generate-resume disabled" in r.content
+        assert b"data-generate-cover-letter disabled" in r.content
 
     def test_tailoring_fails_gracefully_when_ai_errors(
         self, fresh_client, db, tmp_path, settings

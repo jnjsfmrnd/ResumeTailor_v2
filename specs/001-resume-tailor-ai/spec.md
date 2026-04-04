@@ -29,11 +29,11 @@
 
 ### User Story 1 - Tailor Resume For A Target Role (Priority: P1)
 
-As a job seeker, I want to upload my current resume and paste a target job description so I can receive a rewritten resume draft that is more relevant to the role without inventing experience I do not have.
+As a job seeker, I want to use a single workspace page to upload my current resume, paste a target job description, and run generation actions so I can receive a rewritten resume draft that is more relevant to the role without inventing experience I do not have.
 
 **Why this priority**: This is the core value proposition. Without a truthful tailored draft, the feature does not solve the primary hiring workflow.
 
-**Independent Test**: Can be fully tested by uploading a resume, pasting a job description, and confirming that the system produces a revised resume draft with a custom summary, updated skill emphasis, and role-aligned wording that remains grounded in the original resume content.
+**Independent Test**: Can be fully tested by opening the home route workspace, uploading a resume, pasting a job description on the same page, and confirming that the system produces a revised resume draft with a custom summary, updated skill emphasis, and role-aligned wording that remains grounded in the original resume content.
 
 **Acceptance Scenarios**:
 
@@ -41,6 +41,7 @@ As a job seeker, I want to upload my current resume and paste a target job descr
 2. **Given** the uploaded resume does not support a claimed requirement from the job description, **When** the tailored draft is generated, **Then** the system does not invent that claim and instead either omits it or flags it as a gap.
 3. **Given** the resume file cannot be parsed or the job description is missing, **When** the user attempts to generate a draft, **Then** the system shows a clear error and explains how to correct the input.
 4. **Given** a user has uploaded a resume, **When** the workspace is refreshed or the workflow is reopened within the supported v1 session model, **Then** the latest uploaded file is shown as the current source document in the UI.
+5. **Given** generation or export actions are running, **When** the user is on the one-page workspace, **Then** action buttons are temporarily disabled, a loading indicator is shown, and export actions are re-enabled only after the tailoring run reaches a reviewable state.
 
 ---
 
@@ -87,7 +88,7 @@ As a job seeker, I want to approve tailored content and generate the resume and 
 
 ### Functional Requirements
 
-- **FR-001**: The system MUST allow a user to provide an existing resume in PDF or document format and paste a target job description.
+- **FR-001**: The system MUST provide a one-page intake workspace at the home route where a user can provide an existing resume in PDF or document format and paste a target job description.
 - **FR-002**: The system MUST save the latest uploaded resume file for reuse in the current product scope and show in the UI which uploaded file is currently being used as the source document.
 - **FR-003**: The system MUST extract and organize the uploaded resume content into recognizable resume sections when sufficient source content is available.
 - **FR-004**: The system MUST generate a tailored resume draft that rewrites and reorders content to improve role relevance while remaining truthful to the uploaded resume and any user-approved additions.
@@ -103,7 +104,7 @@ As a job seeker, I want to approve tailored content and generate the resume and 
 - **FR-014**: The system MUST generate a final PDF resume that contains only the newly generated tailored resume, including approved tailored content, a professional summary, tailored experience and skills wording, existing projects, and any approved gap-coverage project content.
 - **FR-015**: The system MUST produce the final resume PDF in an ATS-compatible format intended for applicant tracking systems and recruiter review.
 - **FR-016**: The system MUST generate a separate cover-letter output tailored to the target job description and grounded in the uploaded resume and approved additions.
-- **FR-017**: The system MUST provide clear user-facing states for loading, success, incomplete input, and failure across upload, analysis, review, resume generation, cover-letter generation, and export steps, including an explicit indication of the currently active uploaded resume file.
+- **FR-017**: The system MUST provide clear user-facing states for loading, success, incomplete input, and failure across upload, analysis, review, resume generation, cover-letter generation, and export steps, including an explicit indication of the currently active uploaded resume file, temporary button blocking during async actions, and gating of export actions until the run is reviewable.
 
 ### Quality Requirements *(mandatory)*
 

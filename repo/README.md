@@ -7,6 +7,9 @@ ResumeTailor is a Django monolith for AI-assisted resume tailoring with a GameCu
 1. Create a Python 3.12 virtual environment in `repo/`.
 2. Install dependencies from `requirements/dev.txt`.
 3. Copy `.env.example` to `.env` and fill in the required values.
+	For local development, you can leave `GITHUB_MODELS_TOKEN` empty and keep
+	`GITHUB_MODELS_ENABLE_DEV_FALLBACK=true` to generate a deterministic mock draft.
+	Production must still provide a real `GITHUB_MODELS_TOKEN`.
 4. Run `python manage.py migrate`.
 5. Run `python manage.py runserver`.
 

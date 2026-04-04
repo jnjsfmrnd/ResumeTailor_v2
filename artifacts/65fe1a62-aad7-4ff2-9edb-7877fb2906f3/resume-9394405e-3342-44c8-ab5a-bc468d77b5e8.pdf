@@ -1,0 +1,61 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Length 3004 >>
+stream
+BT
+/F1 11 Tf
+72 760 Td
+14 TL
+(Tailored Resume) Tj
+T* () Tj
+T* (Professional Summary) Tj
+T* (Experienced Software Developer with over 6 years of expertise in C# and .NET development, specializing in backend services, REST APIs, and cloud migration using AWS. Skilled in containerization with ECS and EC2, infrastructure as code with Terraform, and CI/CD pipeline automation using GitLab. Proven ability to design scalable microservices, improve system observability, and collaborate across teams in agile environments. Holds AWS Solutions Architect ? Associate certification and experienced in SQL Server and Git version control.) Tj
+T* () Tj
+T* (Skills) Tj
+T* (C#, .NET Core, REST APIs, Microservices, AWS \(ECS, EC2, S3, Lambda, VPC\), Terraform, GitLab CI/CD, SQL Server, Git, Containerization, Agile/Scrum, Datadog observability, Python scripting, Flutter \(state management with Bloc\)) Tj
+T* () Tj
+T* (Experience) Tj
+T* (Software Developer) Tj
+T* (* Designed and developed backend services and REST APIs using C#/.NET, improving reliability and scalability of core payment and mobility systems.) Tj
+T* (* Executed large-scale cloud migration from on-premise to AWS using ECS, EC2, S3, VPC, and lift-and-shift patterns, improving performance and operational efficiency.) Tj
+T* (* Led service decomposition of a tightly coupled module into an independent microservice, enabling isolated deployments and reducing cross-team dependencies.) Tj
+T* (* Built and maintained CI/CD pipelines \(GitLab\) with automated testing, security scanning, artifact versioning, and infrastructure deployments.) Tj
+T* (* Implemented Infrastructure as Code using Terraform for environment provisioning, modules, and state management.) Tj
+T* (* Improved observability using Datadog dashboards, distributed tracing, and alerting, reducing mean time to recovery during incidents.) Tj
+T* (* Collaborated with APIGEE teams to implement API Gateway routing, header-based traffic shifting, and zero-downtime deployments.) Tj
+T* (* Created Python automation scripts and AWS Lambda functions supporting load testing, environment validation, and deployment workflows, improving test coverage and deployment reliability.) Tj
+T* (* Participated in on-call rotations, performing incident response, root-cause analysis, and production service restoration.) Tj
+T* (Software Developer) Tj
+T* (* Developed and maintained a proprietary GIS platform using ASP.NET MVC, C#, and SQL Server, delivering real-time map overlays and data visualization.) Tj
+T* (* Built client-specific features, optimized backend logic, and improved UI/UX for enterprise customers.) Tj
+T* (* Contributed to React and Electron proof-of-concept for next-generation desktop applications.) Tj
+T* (* Used front-end JavaScript libraries such as D3.js to render GIS-based data overlays and interactive map visualizations.) Tj
+T* (* Managed full client onboarding lifecycle including data ingestion, ETL-style preparation, configuration, and on-premise deployment.) Tj
+ET
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000000311 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+3366
+%%EOF

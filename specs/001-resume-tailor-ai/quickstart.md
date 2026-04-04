@@ -10,7 +10,7 @@ Run the Django full-stack application locally, validate the test suite, provisio
 - PostgreSQL 16 or a compatible local Postgres instance
 - Node.js 20+ for Playwright browser automation
 - Azure CLI for infrastructure validation and deployment
-- A GitHub personal access token with `models:read` for GitHub Models API access
+- A GitHub personal access token with `models:read` for GitHub Models API access in production or when you want live local AI output
 
 ## 2. Local environment setup
 
@@ -20,12 +20,13 @@ Run the Django full-stack application locally, validate the test suite, provisio
    - `DJANGO_SETTINGS_MODULE=resumetailor.settings.dev`
    - `DJANGO_SECRET_KEY=<local-dev-secret>`
    - `DATABASE_URL=postgresql://...`
-   - `GITHUB_MODELS_TOKEN=<pat-with-models-read>`
    - `GITHUB_MODELS_ENDPOINT=https://models.inference.ai.azure.com`
    - `GITHUB_MODELS_MODEL=<selected-model>`
+   - `GITHUB_MODELS_ENABLE_DEV_FALLBACK=true`
    - `USE_LOCAL_FILE_STORAGE=true`
-4. Run database migrations.
-5. Start the Django development server from `repo/`.
+4. Optional for live local AI output: set `GITHUB_MODELS_TOKEN=<pat-with-models-read>`.
+5. Run database migrations.
+6. Start the Django development server from `repo/`.
 
 ## 3. Local validation workflow
 
@@ -126,10 +127,11 @@ Expected App Service runtime settings:
 
 After deployment:
 
-1. Open the App Service URL
+1. Open the App Service URL home route and confirm the one-page workspace loads
 2. Upload a PDF resume and confirm the UI displays the active source file name
-3. Paste a job description and generate a tailored draft
-4. Edit the generated content
-5. Generate the resume PDF separately
-6. Generate the cover letter separately
-7. Confirm artifacts are downloadable and the latest upload remains visible as the active source document
+3. Paste a job description in the same page and generate a tailored draft
+4. Confirm generation controls show loading and block buttons while async actions are running
+5. Edit the generated content
+6. Generate the resume PDF separately
+7. Generate the cover letter separately
+8. Confirm artifacts are downloadable and the latest upload remains visible as the active source document

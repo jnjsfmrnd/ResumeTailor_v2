@@ -7,7 +7,12 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.http import require_GET, require_http_methods
 
-from apps.common.views import get_or_create_workspace_session
+from apps.common.views import (
+    get_or_create_workspace_session,
+    serialize_job_target,
+    serialize_source_document,
+    serialize_tailoring_run,
+)
 from apps.intake.forms import ResumeUploadForm
 from apps.intake.models import JobTarget
 from apps.intake.repositories import SourceDocumentRepository
@@ -24,7 +29,20 @@ logger = logging.getLogger(__name__)
 @require_GET
 def upload_page(request: HttpRequest) -> HttpResponse:
     workspace = get_or_create_workspace_session(request)
-    return render(request, "intake/upload.html", {"workspace": workspace})
+    context = {
+        "workspace": workspace,
+        "workspace_state": {
+            "sessionId": str(workspace.id),
+            "currentSourceDocument": serialize_source_document(
+                workspace.current_source_document
+            ),
+            "currentJobTarget": serialize_job_target(workspace.current_job_target),
+            "latestTailoringRun": serialize_tailoring_run(
+                workspace.tailoring_runs.first()
+            ),
+        },
+    }
+    return render(request, "intake/upload.html", context)
 
 
 # ---------------------------------------------------------------------------
